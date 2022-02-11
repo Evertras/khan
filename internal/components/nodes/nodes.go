@@ -57,7 +57,16 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 const nodeTableFormatter = " %30s | %10s | %10s\n"
+
 var nodeTableHeader = fmt.Sprintf(nodeTableFormatter, "Name", "Status", "Address")
+
+func limitString(s string, max int) string {
+	if len(s) > max {
+		return s[:max]
+	}
+
+	return s
+}
 
 func (m Model) View() string {
 	body := strings.Builder{}
@@ -68,7 +77,13 @@ func (m Model) View() string {
 	body.WriteString(nodeTableHeader)
 
 	for _, node := range m.nodes {
-		line := fmt.Sprintf(nodeTableFormatter, node.Name, node.Status, node.Address)
+		line := fmt.Sprintf(
+			nodeTableFormatter,
+			limitString(node.Name, 30),
+			limitString(node.Status, 10),
+			limitString(node.Address, 10),
+		)
+
 		switch node.Status {
 		case "ready":
 			line = styles.Good.Render(line)

@@ -5,6 +5,9 @@
 # targets.  The top section contains commands, while the bottom contains the
 # dependencies for those commands.
 
+TMPNOCOMMIT: ./bin/bubble-sandbox
+	@./bin/bubble-sandbox
+
 # Ensure everything is ready to go
 .PHONY: default
 default: pre-commit-install
@@ -22,7 +25,7 @@ nomad-test-server: ./bin/nomad
 
 # Build everything
 .PHONY: build
-build: ./bin/khan pre-commit-install
+build: ./bin/khan ./bin/bubble-sandbox pre-commit-install
 
 .PHONY: test
 test: pre-commit-install
@@ -68,8 +71,11 @@ endif
 # Local dependencies and builds
 INTERNAL_GO_SOURCES := $(shell find internal/ -name '*.go')
 
-./bin/khan: ./cmd/khan/main.go $(INTERNAL_GO_SOURCES)
-	go build -o ./bin/khan ./cmd/khan/main.go
+./bin/khan: ./cmd/khan/*.go $(INTERNAL_GO_SOURCES)
+	go build -o ./bin/khan ./cmd/khan/*.go
+
+./bin/bubble-sandbox: ./cmd/sandbox/*.go $(INTERNAL_GO_SOURCES)
+	go build -o ./bin/bubble-sandbox ./cmd/sandbox/*.go
 
 ./.git/hooks/pre-commit: ./bin/pre-commit .pre-commit-config.yaml
 	./bin/pre-commit install -t pre-commit
