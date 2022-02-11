@@ -1,4 +1,4 @@
-package app
+package styles
 
 import (
 	"fmt"
@@ -11,12 +11,12 @@ var (
 	dot  = colorFg(" • ", "236")
 
 	// Pre-defined styles
-	sTitle   = makeFgStyle("210")
-	sKeyword = makeFgStyle("211")
-	sSubtle  = makeFgStyle("241")
+	Title   = makeFgStyle("210")
+	Keyword = makeFgStyle("211")
+	Subtle  = makeFgStyle("241")
 )
 
-func checkbox(label string, checked bool) string {
+func Checkbox(label string, checked bool) string {
 	if checked {
 		return colorFg("[x] "+label, "212")
 	}
@@ -31,9 +31,9 @@ func makeFgStyle(color string) func(string) string {
 	return termenv.Style{}.Foreground(term.Color(color)).Styled
 }
 
-func header(title, subtitle string) string {
+func Header(title, subtitle string) string {
 	return fmt.Sprintf("%s\n%s\n-----------------------------------\n",
-		sTitle(title),
-		sSubtle(subtitle),
+		Title(title),
+		Subtle(subtitle),
 	)
 }

@@ -24,6 +24,10 @@ nomad-test-server: ./bin/nomad
 .PHONY: build
 build: ./bin/khan pre-commit-install
 
+.PHONY: test
+test: pre-commit-install
+	@go test ./internal/...
+
 # Format our Go code
 .PHONY: fmt
 fmt:
@@ -62,7 +66,9 @@ endif
 
 ################################################################################
 # Local dependencies and builds
-./bin/khan: ./cmd/khan/main.go ./internal/app/*.go
+COMPONENT_SOURCES := $(shell find internal/components -name '*.go')
+
+./bin/khan: ./cmd/khan/main.go ./internal/app/*.go $(COMPONENT_SOURCES)
 	go build -o ./bin/khan ./cmd/khan/main.go
 
 ./.git/hooks/pre-commit: ./bin/pre-commit .pre-commit-config.yaml
