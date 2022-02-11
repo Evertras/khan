@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ItemBack = NewItem("Back", "b", "esc")
+	ItemBack = NewItem("Back", "b", "q", "esc")
 )
 
 type Item struct {

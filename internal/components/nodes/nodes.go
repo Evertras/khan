@@ -56,14 +56,19 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
+const nodeTableFormatter = " %30s | %10s | %10s\n"
+var nodeTableHeader = fmt.Sprintf(nodeTableFormatter, "Name", "Status", "Address")
+
 func (m Model) View() string {
 	body := strings.Builder{}
 
 	body.WriteString(m.nodeMenu.View())
 	body.WriteString("\n")
 
+	body.WriteString(nodeTableHeader)
+
 	for _, node := range m.nodes {
-		line := fmt.Sprintf(" %30s - %s\n", node.Name, node.Status)
+		line := fmt.Sprintf(nodeTableFormatter, node.Name, node.Status, node.Address)
 		switch node.Status {
 		case "ready":
 			line = styles.Good.Render(line)
