@@ -11,13 +11,18 @@ var (
 	term = termenv.EnvColorProfile()
 	dot  = colorFg(" • ", "236")
 
+	// Pre-defined colors
+	ColorSubtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#383838"}
+	ColorHighlight = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
+	ColorSpecial   = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
+
 	// Pre-defined styles
-	Title   = makeFgStyle("210")
-	Keyword = makeFgStyle("211")
-	Subtle  = makeFgStyle("241")
-	Good    = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
-	Error   = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
-	Bold    = lipgloss.NewStyle().Bold(true)
+	Good  = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
+	Error = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+	Bold  = lipgloss.NewStyle().Bold(true)
+
+	Title    = lipgloss.NewStyle().Foreground(ColorHighlight).Bold(true)
+	Subtitle = lipgloss.NewStyle().Foreground(ColorSubtle)
 )
 
 func Checkbox(label string, checked bool) string {
@@ -37,7 +42,7 @@ func makeFgStyle(color string) func(string) string {
 
 func Header(title, subtitle string) string {
 	return fmt.Sprintf("%s\n%s\n-----------------------------------\n",
-		Title(title),
-		Subtle(subtitle),
+		Title.Render(title),
+		Subtitle.Render(subtitle),
 	)
 }

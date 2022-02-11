@@ -4,29 +4,26 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/hashicorp/nomad/api"
 
 	"github.com/evertras/khan/internal/components/joblist"
-	"github.com/evertras/khan/internal/components/menu"
 	"github.com/evertras/khan/internal/components/nodes"
-	"github.com/evertras/khan/internal/styles"
 )
 
 type activeScreen int
 
 type Model struct {
-	mainMenu     menu.Model
 	nodesModel   nodes.Model
 	joblistModel joblist.Model
+
+	width  int
+	height int
 
 	active activeScreen
 }
 
 const (
-	mainMenuItemNodes = "Nodes"
-	mainMenuItemJobs  = "Jobs"
-	mainMenuItemQuit  = "Quit"
-
 	activeMainMenu activeScreen = iota
 	activeNodes
 	activeJobList
@@ -34,12 +31,6 @@ const (
 
 func NewModel() Model {
 	return Model{
-		mainMenu: menu.NewModel([]menu.Item{
-			menu.NewItem(mainMenuItemNodes, "n"),
-			menu.NewItem(mainMenuItemJobs, "j"),
-			menu.NewItem(mainMenuItemQuit, "q", "esc"),
-		}),
-
 		active: activeMainMenu,
 	}
 }
@@ -54,11 +45,27 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch m.active {
 	case activeMainMenu:
-		m.mainMenu, cmd = m.mainMenu.Update(msg)
+
+	case activeNodes:
+		m.nodesModel, cmd = m.nodesModel.Update(msg)
 		cmds = append(cmds, cmd)
 
-		switch m.mainMenu.Selected() {
-		case mainMenuItemNodes:
+	case activeJobList:
+		m.joblistModel, cmd = m.joblistModel.Update(msg)
+		cmds = append(cmds, cmd)
+	}
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "q", "ctrl+c":
+			// Ctrl+C always quits as a safety valve
+			cmds = append(cmds, tea.Quit)
+
+		case "H":
+			m.active = activeMainMenu
+
+		case "N":
 			m.active = activeNodes
 			cmds = append(cmds, func() tea.Msg {
 				c, err := api.NewClient(api.DefaultConfig())
@@ -76,7 +83,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return nodes
 			})
 
-		case mainMenuItemJobs:
+		case "J":
 			m.active = activeJobList
 			cmds = append(cmds, func() tea.Msg {
 				c, err := api.NewClient(api.DefaultConfig())
@@ -93,52 +100,51 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				return nodes
 			})
-
-		case mainMenuItemQuit:
-			cmds = append(cmds, tea.Quit)
 		}
 
-	case activeNodes:
-		m.nodesModel, cmd = m.nodesModel.Update(msg)
-		cmds = append(cmds, cmd)
-
-	case activeJobList:
-		m.joblistModel, cmd = m.joblistModel.Update(msg)
-		cmds = append(cmds, cmd)
-	}
-
-	switch t := msg.(type) {
-	case tea.KeyMsg:
-		switch t.String() {
-		case "ctrl+c":
-			// Ctrl+C always quits as a safety valve
-			cmds = append(cmds, tea.Quit)
-		}
-
-	case nodes.BackMsg:
-		m.active = activeMainMenu
-
-	case joblist.BackMsg:
-		m.active = activeMainMenu
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 	}
 
 	return m, tea.Batch(cmds...)
 }
 
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func (m Model) View() string {
 	body := strings.Builder{}
 
+	row := lipgloss.JoinHorizontal(
+		lipgloss.Center,
+		tabGapTitle.Render("Khan"),
+		m.renderTab("Home", activeMainMenu),
+		m.renderTab("Nodes", activeNodes),
+		m.renderTab("Jobs", activeJobList),
+	)
+
+	gap := tabGap.Render(strings.Repeat(" ", max(0, m.width-lipgloss.Width(row)-2)))
+
+	row = lipgloss.JoinHorizontal(lipgloss.Bottom, row, gap)
+
+	body.WriteString(row)
+	body.WriteString("\n")
+
 	switch m.active {
 	case activeMainMenu:
-		body.WriteString(styles.Header("Khan", "A management tool for Nomad"))
-		body.WriteString(m.mainMenu.View())
+		// TODO: Proper lipgloss style
+		body.WriteString(" Welcome to Khan!  Press the first letter (with shift) of the tabs above to visit each tab.\n\n")
+		body.WriteString(" Press 'q' or ctrl+C at any time to quit.")
 
 	case activeNodes:
-		body.WriteString(styles.Header("Khan - Nodes", "Current nodes"))
 		body.WriteString(m.nodesModel.View())
 
 	case activeJobList:
-		body.WriteString(styles.Header("Khan - Jobs", "Current known jobs"))
 		body.WriteString(m.joblistModel.View())
 	}
 

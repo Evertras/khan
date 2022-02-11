@@ -6,7 +6,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/hashicorp/nomad/api"
 
-	"github.com/evertras/khan/internal/components/menu"
 	"github.com/evertras/khan/internal/components/table"
 	"github.com/evertras/khan/internal/styles"
 )
@@ -14,7 +13,6 @@ import (
 type Model struct {
 	jobs []*api.JobListStub
 
-	menu  menu.Model
 	table table.Model
 
 	ShowServices bool
@@ -35,14 +33,8 @@ const (
 )
 
 func NewModelWithJobs(jobs []*api.JobListStub) Model {
-	menuItems := []menu.Item{
-		menu.ItemBack,
-	}
-
 	m := Model{
-		jobs: jobs,
-		menu: menu.NewModel(menuItems),
-
+		jobs:         jobs,
 		ShowServices: true,
 		ShowBatch:    true,
 	}
@@ -104,16 +96,13 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		cmds []tea.Cmd
 	)
 
-	m.menu, cmd = m.menu.Update(msg)
-	cmds = append(cmds, cmd)
-
 	switch msg := msg.(type) {
 	case []*api.JobListStub:
 		m = NewModelWithJobs(msg)
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "a":
+		case "b":
 			m.ShowBatch = !m.ShowBatch
 			m.table = m.generateTable()
 
@@ -123,10 +112,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 	}
 
-	switch m.menu.Selected() {
-	case menu.ItemBack.Name():
-		cmds = append(cmds, BackCmd)
-	}
+	m.table, cmd = m.table.Update(cmd)
+	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
 }
@@ -134,11 +121,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 func (m Model) View() string {
 	body := strings.Builder{}
 
-	body.WriteString(m.menu.View())
-	body.WriteString("\n")
+	body.WriteString("Filters: ")
 	body.WriteString(styles.Checkbox("Show (s)ervices", m.ShowServices))
 	body.WriteString("  ")
-	body.WriteString(styles.Checkbox("Show b(a)tch jobs", m.ShowBatch))
+	body.WriteString(styles.Checkbox("Show (b)atch jobs", m.ShowBatch))
 	body.WriteString("\n")
 	body.WriteString(m.table.View())
 

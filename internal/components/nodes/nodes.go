@@ -6,7 +6,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/hashicorp/nomad/api"
 
-	"github.com/evertras/khan/internal/components/menu"
 	"github.com/evertras/khan/internal/components/table"
 	"github.com/evertras/khan/internal/styles"
 )
@@ -14,7 +13,6 @@ import (
 type Model struct {
 	nodes []*api.NodeListStub
 
-	menu  menu.Model
 	table table.Model
 }
 
@@ -29,8 +27,6 @@ const (
 )
 
 func NewModelWithNodes(nodes []*api.NodeListStub) Model {
-	menuItems := []menu.Item{menu.ItemBack}
-
 	headers := []table.Header{
 		table.NewHeader(tableKeyName, "Name", 30).WithStyle(styles.Bold),
 		table.NewHeader(tableKeyStatus, "Status", 10).WithStyle(styles.Bold),
@@ -59,7 +55,6 @@ func NewModelWithNodes(nodes []*api.NodeListStub) Model {
 
 	return Model{
 		nodes: nodes,
-		menu:  menu.NewModel(menuItems),
 		table: table.New(headers).WithRows(rows),
 	}
 }
@@ -74,17 +69,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		cmds []tea.Cmd
 	)
 
-	m.menu, cmd = m.menu.Update(msg)
+	m.table, cmd = m.table.Update(msg)
 	cmds = append(cmds, cmd)
 
 	switch msg := msg.(type) {
 	case []*api.NodeListStub:
 		m = NewModelWithNodes(msg)
-	}
-
-	switch m.menu.Selected() {
-	case menu.ItemBack.Name():
-		cmds = append(cmds, BackCmd)
 	}
 
 	return m, tea.Batch(cmds...)
@@ -93,8 +83,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 func (m Model) View() string {
 	body := strings.Builder{}
 
-	body.WriteString(m.menu.View())
-	body.WriteString("\n")
 	body.WriteString(m.table.View())
 
 	return body.String()
