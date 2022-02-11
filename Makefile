@@ -19,7 +19,7 @@ nomad-test-server: ./bin/nomad
 	nomad agent -dev
 
 .PHONY: pre-commit-install
-pre-commit-install: ./.git/hooks/pre-commit
+pre-commit-install: ./.git/hooks/pre-commit ./.git/hooks/pre-push
 
 .PHONY: build
 build: ./bin/khan pre-commit-install
@@ -60,4 +60,8 @@ endif
 	go build -o ./bin/khan ./cmd/khan/main.go
 
 ./.git/hooks/pre-commit: ./bin/pre-commit .pre-commit-config.yaml
-	pre-commit install -t pre-commit
+	./bin/pre-commit install -t pre-commit
+
+./.git/hooks/pre-push: ./bin/pre-commit .pre-commit-config.yaml
+	./bin/pre-commit install -t pre-push
+
