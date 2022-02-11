@@ -1,6 +1,7 @@
 package nodes
 
 import (
+	"sort"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -66,7 +67,8 @@ func NewModelWithNodes(nodes []*api.NodeListStub) Model {
 			driverStrs = append(driverStrs, key)
 		}
 
-		// TODO: Sort for stability
+		sort.Strings(driverStrs)
+
 		data[tableKeyDrivers] = strings.Join(driverStrs, ",")
 
 		row := table.NewRow(data)
