@@ -28,9 +28,9 @@ func NewModel() Model {
 		table.NewRow(table.RowData{
 			"id":          "123",
 			"name":        "Yay",
-			"description": "Another description here",
+			"description": "Super bold!",
 			"count":       17,
-		}),
+		}).WithStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("9")).Bold(true)),
 		table.NewRow(table.RowData{
 			"id":          "def",
 			"name":        "Yay",

@@ -26,6 +26,12 @@ func NewRow(data RowData) Row {
 	return d
 }
 
+func (r Row) WithStyle(style lipgloss.Style) Row {
+	r.Style = style
+
+	return r
+}
+
 var borderRowLeft = lipgloss.Border{
 	Left:        "┃",
 	Right:       "┃",
@@ -69,7 +75,7 @@ func (r Row) render(headers []Header, last bool) string {
 			borderStyle = borderStyle.BorderBottom(true)
 		}
 
-		dataStr := fmt.Sprintf(header.fmtString, limitStr(str, header.Width))
+		dataStr := r.Style.Render(fmt.Sprintf(header.fmtString, limitStr(str, header.Width)))
 
 		columnStrings = append(columnStrings, borderStyle.Render(dataStr))
 	}
