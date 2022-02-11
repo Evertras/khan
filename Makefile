@@ -7,7 +7,7 @@
 
 # Ensure everything is ready to go
 .PHONY: default
-default:
+default: pre-commit-install
 	@echo Ready to go!
 
 .PHONY: clean
@@ -17,6 +17,10 @@ clean:
 .PHONY: nomad-test-server
 nomad-test-server: ./bin/nomad
 	nomad agent -dev
+
+.PHONY: pre-commit-install
+pre-commit-install: ./bin/pre-commit
+	@bin/pre-commit install
 
 ################################################################################
 # Local bin files
@@ -39,3 +43,11 @@ endif
 		https://releases.hashicorp.com/nomad/$(NOMAD_VERSION)/nomad_$(NOMAD_VERSION)_$(OS_URL)_amd64.zip
 	@cd bin && unzip nomad.zip
 	@rm bin/nomad.zip
+
+./bin/pre-commit.pyz:
+	@mkdir -p bin
+	curl -Lo bin/pre-commit.pyz https://github.com/pre-commit/pre-commit/releases/download/v2.17.0/pre-commit-2.17.0.pyz
+
+./bin/pre-commit: ./bin/pre-commit.pyz
+	@echo '#!/bin/bash\npython3 bin/pre-commit.pyz "$$@"' > ./bin/pre-commit
+	@chmod +x ./bin/pre-commit
