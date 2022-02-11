@@ -17,6 +17,7 @@ var (
 	Subtle  = makeFgStyle("241")
 	Good    = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
 	Error   = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+	Bold    = lipgloss.NewStyle().Bold(true)
 )
 
 func Checkbox(label string, checked bool) string {

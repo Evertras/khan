@@ -8,6 +8,7 @@ import (
 
 	"github.com/evertras/khan/internal/components/menu"
 	"github.com/evertras/khan/internal/components/table"
+	"github.com/evertras/khan/internal/styles"
 )
 
 type Model struct {
@@ -31,19 +32,29 @@ func NewModelWithNodes(nodes []*api.NodeListStub) Model {
 	menuItems := []menu.Item{menu.ItemBack}
 
 	headers := []table.Header{
-		table.NewHeader(tableKeyName, "Name", 30),
-		table.NewHeader(tableKeyStatus, "Status", 10),
-		table.NewHeader(tableKeyAddress, "Address", 20),
+		table.NewHeader(tableKeyName, "Name", 30).WithStyle(styles.Bold),
+		table.NewHeader(tableKeyStatus, "Status", 10).WithStyle(styles.Bold),
+		table.NewHeader(tableKeyAddress, "Address", 20).WithStyle(styles.Bold),
 	}
 
 	rows := []table.Row{}
 
 	for _, node := range nodes {
-		rows = append(rows, table.NewRow(table.RowData{
+		row := table.NewRow(table.RowData{
 			tableKeyName:    node.Name,
 			tableKeyStatus:  node.Status,
 			tableKeyAddress: node.Address,
-		}))
+		})
+
+		switch node.Status {
+		case "ready":
+			row.Style = styles.Good
+
+		default:
+			row.Style = styles.Error
+		}
+
+		rows = append(rows, row)
 	}
 
 	return Model{
