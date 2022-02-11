@@ -14,8 +14,8 @@ import (
 type Model struct {
 	nodes []*api.NodeListStub
 
-	nodeMenu  menu.Model
-	nodeTable table.Model
+	menu  menu.Model
+	table table.Model
 }
 
 func NewEmptyModel() Model {
@@ -58,9 +58,9 @@ func NewModelWithNodes(nodes []*api.NodeListStub) Model {
 	}
 
 	return Model{
-		nodes:     nodes,
-		nodeMenu:  menu.NewModel(menuItems),
-		nodeTable: table.New(headers).WithRows(rows),
+		nodes: nodes,
+		menu:  menu.NewModel(menuItems),
+		table: table.New(headers).WithRows(rows),
 	}
 }
 
@@ -74,7 +74,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		cmds []tea.Cmd
 	)
 
-	m.nodeMenu, cmd = m.nodeMenu.Update(msg)
+	m.menu, cmd = m.menu.Update(msg)
 	cmds = append(cmds, cmd)
 
 	switch msg := msg.(type) {
@@ -82,7 +82,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		m = NewModelWithNodes(msg)
 	}
 
-	switch m.nodeMenu.Selected() {
+	switch m.menu.Selected() {
 	case menu.ItemBack.Name():
 		cmds = append(cmds, BackCmd)
 	}
@@ -93,10 +93,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 func (m Model) View() string {
 	body := strings.Builder{}
 
-	body.WriteString(m.nodeMenu.View())
+	body.WriteString(m.menu.View())
 	body.WriteString("\n")
-
-	body.WriteString(m.nodeTable.View())
+	body.WriteString(m.table.View())
 
 	return body.String()
 }
