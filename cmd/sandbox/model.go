@@ -14,7 +14,7 @@ func NewModel() Model {
 	headers := []table.Header{
 		table.NewHeader("id", "ID", 5).WithStyle(lipgloss.NewStyle().Bold(true)),
 		table.NewHeader("name", "Name", 10),
-		table.NewHeader("description", "Description", 20),
+		table.NewHeader("description", "Description", 30),
 		table.NewHeader("count", "#", 5),
 	}
 
@@ -24,6 +24,18 @@ func NewModel() Model {
 			"name":        "Hello",
 			"description": "The first table entry, ever",
 			"count":       4,
+		}),
+		table.NewRow(table.RowData{
+			"id":          "123",
+			"name":        "Yay",
+			"description": "Another description here",
+			"count":       17,
+		}),
+		table.NewRow(table.RowData{
+			"id":          "def",
+			"name":        "Yay",
+			"description": "This is a really, really, really long description that will get cut off",
+			"count":       "N/A",
 		}),
 	}
 

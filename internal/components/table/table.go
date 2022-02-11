@@ -53,18 +53,17 @@ func (m Model) View() string {
 	headerStrings := []string{}
 
 	for i, header := range m.headers {
-		fmtString := fmt.Sprintf("%%%ds", header.Width)
-		headerSection := fmt.Sprintf(fmtString, header.Title)
+		headerSection := fmt.Sprintf(header.fmtString, header.Title)
 		borderStyle := lipgloss.NewStyle()
 
 		if i == 0 {
-			//borderStyle = borderStyle.BorderStyle(borderHeaderFirst)
-			borderStyle = borderStyle.BorderStyle(borderHeaderTriangleFirst)
+			borderStyle = borderStyle.BorderStyle(borderHeaderFirst)
+			//borderStyle = borderStyle.BorderStyle(borderHeaderTriangleFirst)
 		} else if i < len(m.headers)-1 {
 			borderStyle = borderStyle.BorderStyle(borderHeaderMiddle).BorderTop(true).BorderBottom(true).BorderRight(true)
 		} else {
-			//borderStyle = borderStyle.BorderStyle(borderHeaderLast).BorderTop(true).BorderBottom(true).BorderRight(true)
-			borderStyle = borderStyle.BorderStyle(borderHeaderTriangleLast).BorderTop(true).BorderBottom(true).BorderRight(true)
+			borderStyle = borderStyle.BorderStyle(borderHeaderLast).BorderTop(true).BorderBottom(true).BorderRight(true)
+			//borderStyle = borderStyle.BorderStyle(borderHeaderTriangleLast).BorderTop(true).BorderBottom(true).BorderRight(true)
 		}
 
 		headerStrings = append(headerStrings, borderStyle.Render(header.Style.Render(headerSection)))
@@ -73,5 +72,11 @@ func (m Model) View() string {
 	body.WriteString(lipgloss.JoinHorizontal(lipgloss.Bottom, headerStrings...))
 
 	body.WriteString("\n")
+
+	for i, row := range m.rows {
+		body.WriteString(row.render(m.headers, i == len(m.rows)-1))
+		body.WriteString("\n")
+	}
+
 	return body.String()
 }

@@ -1,19 +1,26 @@
 package table
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"fmt"
+
+	"github.com/charmbracelet/lipgloss"
+)
 
 type Header struct {
 	Title string
 	Key   string
 	Width int
 	Style lipgloss.Style
+
+	fmtString string
 }
 
 func NewHeader(key, title string, width int) Header {
 	return Header{
-		Key:   key,
-		Title: title,
-		Width: width,
+		Key:       key,
+		Title:     title,
+		Width:     width,
+		fmtString: fmt.Sprintf("%%%ds", width),
 	}
 }
 
@@ -22,6 +29,8 @@ func (h Header) WithStyle(style lipgloss.Style) Header {
 	return h
 }
 
+// https://www.w3.org/TR/xml-entity-names/025.html
+
 var borderHeaderFirst = lipgloss.Border{
 	Top:         "━",
 	Bottom:      "━",
@@ -29,8 +38,8 @@ var borderHeaderFirst = lipgloss.Border{
 	Right:       "┃",
 	TopRight:    "┳",
 	TopLeft:     "┏",
-	BottomRight: "┻",
-	BottomLeft:  "┗",
+	BottomRight: "╋",
+	BottomLeft:  "┣",
 }
 
 var borderHeaderTriangleFirst = lipgloss.Border{
@@ -40,7 +49,7 @@ var borderHeaderTriangleFirst = lipgloss.Border{
 	Right:       "┃",
 	TopRight:    "┳",
 	TopLeft:     "◤",
-	BottomRight: "┻",
+	BottomRight: "╋",
 	BottomLeft:  "◣",
 }
 
@@ -51,7 +60,7 @@ var borderHeaderMiddle = lipgloss.Border{
 	Right:       "┃",
 	TopRight:    "┳",
 	TopLeft:     "",
-	BottomRight: "┻",
+	BottomRight: "╋",
 	BottomLeft:  "",
 }
 
@@ -62,7 +71,7 @@ var borderHeaderLast = lipgloss.Border{
 	Right:       "┃",
 	TopRight:    "┓",
 	TopLeft:     "",
-	BottomRight: "┛",
+	BottomRight: "┫",
 	BottomLeft:  "",
 }
 
