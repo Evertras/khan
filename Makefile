@@ -28,7 +28,7 @@ pre-commit-install: ./bin/pre-commit
 # This section contains local tools that we download on demand, so that the
 # developer doesn't need to download global versions.
 
-NOMAD_VERSION := 1.1.1
+NOMAD_VERSION := 1.2.6
 
 # For now we only support Linux 64 bit and MacOS
 ifeq ($(shell uname), Darwin)
