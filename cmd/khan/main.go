@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	p := tea.NewProgram(app.Model(5))
+	p := tea.NewProgram(app.MainMenuModel{})
 	if err := p.Start(); err != nil {
 		log.Fatal(err)
 	}
