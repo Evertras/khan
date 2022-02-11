@@ -1,32 +1,55 @@
 package nodes
 
 import (
-	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/hashicorp/nomad/api"
 
 	"github.com/evertras/khan/internal/components/menu"
-	"github.com/evertras/khan/internal/styles"
+	"github.com/evertras/khan/internal/components/table"
 )
 
 type Model struct {
 	nodes []*api.NodeListStub
 
-	nodeMenu menu.Model
+	nodeMenu  menu.Model
+	nodeTable table.Model
 }
 
 func NewEmptyModel() Model {
 	return Model{}
 }
 
+const (
+	tableKeyName    = "name"
+	tableKeyStatus  = "status"
+	tableKeyAddress = "address"
+)
+
 func NewModelWithNodes(nodes []*api.NodeListStub) Model {
 	menuItems := []menu.Item{menu.ItemBack}
 
+	headers := []table.Header{
+		table.NewHeader(tableKeyName, "Name", 30),
+		table.NewHeader(tableKeyStatus, "Status", 10),
+		table.NewHeader(tableKeyAddress, "Address", 20),
+	}
+
+	rows := []table.Row{}
+
+	for _, node := range nodes {
+		rows = append(rows, table.NewRow(table.RowData{
+			tableKeyName:    node.Name,
+			tableKeyStatus:  node.Status,
+			tableKeyAddress: node.Address,
+		}))
+	}
+
 	return Model{
-		nodes:    nodes,
-		nodeMenu: menu.NewModel(menuItems),
+		nodes:     nodes,
+		nodeMenu:  menu.NewModel(menuItems),
+		nodeTable: table.New(headers).WithRows(rows),
 	}
 }
 
@@ -56,44 +79,13 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-const nodeTableFormatter = " %30s | %10s | %10s\n"
-
-var nodeTableHeader = fmt.Sprintf(nodeTableFormatter, "Name", "Status", "Address")
-
-func limitString(s string, max int) string {
-	if len(s) > max {
-		return s[:max]
-	}
-
-	return s
-}
-
 func (m Model) View() string {
 	body := strings.Builder{}
 
 	body.WriteString(m.nodeMenu.View())
 	body.WriteString("\n")
 
-	body.WriteString(nodeTableHeader)
-
-	for _, node := range m.nodes {
-		line := fmt.Sprintf(
-			nodeTableFormatter,
-			limitString(node.Name, 30),
-			limitString(node.Status, 10),
-			limitString(node.Address, 10),
-		)
-
-		switch node.Status {
-		case "ready":
-			line = styles.Good.Render(line)
-
-		default:
-			// TODO: Check what other statuses actually are
-			line = styles.Error.Render(line)
-		}
-		body.WriteString(line)
-	}
+	body.WriteString(m.nodeTable.View())
 
 	return body.String()
 }
