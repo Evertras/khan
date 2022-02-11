@@ -19,8 +19,10 @@ nomad-test-server: ./bin/nomad
 	nomad agent -dev
 
 .PHONY: pre-commit-install
-pre-commit-install: ./bin/pre-commit
-	@bin/pre-commit install
+pre-commit-install: ./.git/hooks/pre-commit
+
+.PHONY: build
+build: ./bin/khan pre-commit-install
 
 ################################################################################
 # Local bin files
@@ -51,3 +53,11 @@ endif
 ./bin/pre-commit: ./bin/pre-commit.pyz
 	@echo '#!/bin/bash\npython3 bin/pre-commit.pyz "$$@"' > ./bin/pre-commit
 	@chmod +x ./bin/pre-commit
+
+################################################################################
+# Local dependencies and builds
+./bin/khan: ./cmd/khan/main.go ./internal/app/*.go
+	go build -o ./bin/khan ./cmd/khan/main.go
+
+./.git/hooks/pre-commit: ./bin/pre-commit .pre-commit-config.yaml
+	pre-commit install -t pre-commit

@@ -9,7 +9,6 @@ repos:
   - id: check-executables-have-shebangs
   - id: check-json
   - id: check-yaml
-  - id: end-of-file-fixer
   - id: trailing-whitespace
 - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
   rev: 2.4.0

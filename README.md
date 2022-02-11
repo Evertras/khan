@@ -20,8 +20,9 @@ Khan uses the [default Nomad configuration variables](https://www.nomadproject.i
 
 The following are required as global installs for development:
 
-* Go 1.17+
-* Make
+* Python 3 (standard install for Linux/Mac should be fine)
+* Go 1.17+ ([goenv](https://github.com/syndbg/goenv) is recommended)
+* Make (probably already installed)
 
 Other tools will be handled automatically by the Makefile.  These tools will be
 downloaded locally to the `./bin` folder.  For ease of use, you may want to use
@@ -38,4 +39,3 @@ dev mode which brings up the server and a single client, itself.
 
 More complicated setups will be added later via Vagrant, but this is enough for
 a starting point.
-
