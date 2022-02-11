@@ -21,26 +21,55 @@ func NewEmptyModel() Model {
 }
 
 const (
-	tableKeyName    = "name"
-	tableKeyStatus  = "status"
-	tableKeyAddress = "address"
+	tableKeyID         = "id"
+	tableKeyName       = "name"
+	tableKeyDatacenter = "datacenter"
+	tableKeyStatus     = "status"
+	tableKeyAddress    = "address"
+	tableKeyVersion    = "version"
+	tableKeyDrain      = "drain"
+	tableKeyEligible   = "eligible"
+	tableKeyDrivers    = "drivers"
 )
 
 func NewModelWithNodes(nodes []*api.NodeListStub) Model {
+	// TODO: Make style global among all headers
 	headers := []table.Header{
+		table.NewHeader(tableKeyID, "ID", 10).WithStyle(styles.Bold),
+		table.NewHeader(tableKeyDatacenter, "Datacenter", 12).WithStyle(styles.Bold),
 		table.NewHeader(tableKeyName, "Name", 30).WithStyle(styles.Bold),
-		table.NewHeader(tableKeyStatus, "Status", 10).WithStyle(styles.Bold),
-		table.NewHeader(tableKeyAddress, "Address", 20).WithStyle(styles.Bold),
+		table.NewHeader(tableKeyStatus, "Status", 8).WithStyle(styles.Bold),
+		table.NewHeader(tableKeyAddress, "Address", 13).WithStyle(styles.Bold),
+		table.NewHeader(tableKeyVersion, "Version", len("Version")+1).WithStyle(styles.Bold),
+		table.NewHeader(tableKeyEligible, "Eligible", 14).WithStyle(styles.Bold),
+		table.NewHeader(tableKeyDrain, "Draining", len("Draining")+1).WithStyle(styles.Bold),
+		table.NewHeader(tableKeyDrivers, "Drivers", 40).WithStyle(styles.Bold),
 	}
 
 	rows := []table.Row{}
 
 	for _, node := range nodes {
-		row := table.NewRow(table.RowData{
-			tableKeyName:    node.Name,
-			tableKeyStatus:  node.Status,
-			tableKeyAddress: node.Address,
-		})
+		data := table.RowData{
+			tableKeyID:         node.ID,
+			tableKeyDatacenter: node.Datacenter,
+			tableKeyName:       node.Name,
+			tableKeyStatus:     node.Status,
+			tableKeyAddress:    node.Address,
+			tableKeyVersion:    node.Version,
+			tableKeyEligible:   node.SchedulingEligibility,
+			tableKeyDrain:      node.Drain,
+		}
+
+		driverStrs := []string{}
+
+		for key := range node.Drivers {
+			driverStrs = append(driverStrs, key)
+		}
+
+		// TODO: Sort for stability
+		data[tableKeyDrivers] = strings.Join(driverStrs, ",")
+
+		row := table.NewRow(data)
 
 		switch node.Status {
 		case "ready":
