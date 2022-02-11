@@ -39,11 +39,11 @@ func NewModelWithNodes(nodes []*api.NodeListStub) Model {
 		table.NewHeader(tableKeyDatacenter, "Datacenter", 12).WithStyle(styles.Bold),
 		table.NewHeader(tableKeyName, "Name", 30).WithStyle(styles.Bold),
 		table.NewHeader(tableKeyStatus, "Status", 8).WithStyle(styles.Bold),
-		table.NewHeader(tableKeyAddress, "Address", 13).WithStyle(styles.Bold),
-		table.NewHeader(tableKeyVersion, "Version", len("Version")+1).WithStyle(styles.Bold),
 		table.NewHeader(tableKeyEligible, "Eligibility", 14).WithStyle(styles.Bold),
 		table.NewHeader(tableKeyDrain, "Draining", len("Draining")+1).WithStyle(styles.Bold),
+		table.NewHeader(tableKeyAddress, "Address", 13).WithStyle(styles.Bold),
 		table.NewHeader(tableKeyDrivers, "Drivers", 40).WithStyle(styles.Bold),
+		table.NewHeader(tableKeyVersion, "Version", len("Version")+1).WithStyle(styles.Bold),
 	}
 
 	rows := []table.Row{}
