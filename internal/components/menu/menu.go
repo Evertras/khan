@@ -17,6 +17,10 @@ type Item struct {
 	extraShortcutKeys []string
 }
 
+func (i Item) Name() string {
+	return i.name
+}
+
 type Model struct {
 	items    []Item
 	selected string
@@ -49,6 +53,8 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+	m.selected = ""
+
 	switch t := msg.(type) {
 	case tea.KeyMsg:
 		keyStr := t.String()
@@ -65,6 +71,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			}
 		}
 	}
+
 	return m, nil
 }
 
