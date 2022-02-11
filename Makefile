@@ -10,19 +10,25 @@
 default: pre-commit-install
 	@echo Ready to go!
 
+# Clean temporary files
 .PHONY: clean
 clean:
 	rm -rf bin
 
+# Run a Nomad server for testing purposes
 .PHONY: nomad-test-server
 nomad-test-server: ./bin/nomad
 	nomad agent -dev
 
-.PHONY: pre-commit-install
-pre-commit-install: ./.git/hooks/pre-commit ./.git/hooks/pre-push
-
+# Build everything
 .PHONY: build
 build: ./bin/khan pre-commit-install
+
+# Format our Go code
+.PHONY: fmt
+fmt:
+	@go fmt ./cmd/...
+	@go fmt ./internal/...
 
 ################################################################################
 # Local bin files
@@ -64,4 +70,7 @@ endif
 
 ./.git/hooks/pre-push: ./bin/pre-commit .pre-commit-config.yaml
 	./bin/pre-commit install -t pre-push
+
+.PHONY: pre-commit-install
+pre-commit-install: ./.git/hooks/pre-commit ./.git/hooks/pre-push
 
