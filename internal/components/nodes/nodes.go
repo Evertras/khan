@@ -72,6 +72,10 @@ func (m Model) View() string {
 		switch node.Status {
 		case "ready":
 			line = styles.Good.Render(line)
+
+		default:
+			// TODO: Check what other statuses actually are
+			line = styles.Error.Render(line)
 		}
 		body.WriteString(line)
 	}
