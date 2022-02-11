@@ -1,10 +1,14 @@
 package nodes
 
 import (
+	"fmt"
+	"strings"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/hashicorp/nomad/api"
 
 	"github.com/evertras/khan/internal/components/menu"
+	"github.com/evertras/khan/internal/styles"
 )
 
 type Model struct {
@@ -18,22 +22,11 @@ func NewEmptyModel() Model {
 }
 
 func NewModelWithNodes(nodes []*api.NodeListStub) Model {
-	items := []menu.Item{menu.ItemBack}
-
-	shortcuts := []string{
-		"1",
-		"2",
-		"3",
-		"4",
-	}
-
-	for index, node := range nodes {
-		items = append(items, menu.NewItem(node.Name, shortcuts[index]))
-	}
+	menuItems := []menu.Item{menu.ItemBack}
 
 	return Model{
 		nodes:    nodes,
-		nodeMenu: menu.NewModel(items),
+		nodeMenu: menu.NewModel(menuItems),
 	}
 }
 
@@ -50,9 +43,9 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	m.nodeMenu, cmd = m.nodeMenu.Update(msg)
 	cmds = append(cmds, cmd)
 
-	switch t := msg.(type) {
+	switch msg := msg.(type) {
 	case []*api.NodeListStub:
-		m = NewModelWithNodes(t)
+		m = NewModelWithNodes(msg)
 	}
 
 	switch m.nodeMenu.Selected() {
@@ -64,5 +57,19 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	return m.nodeMenu.View()
+	body := strings.Builder{}
+
+	body.WriteString(m.nodeMenu.View())
+	body.WriteString("\n")
+
+	for _, node := range m.nodes {
+		line := fmt.Sprintf(" %30s - %s\n", node.Name, node.Status)
+		switch node.Status {
+		case "ready":
+			line = styles.Good.Render(line)
+		}
+		body.WriteString(line)
+	}
+
+	return body.String()
 }

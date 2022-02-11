@@ -66,9 +66,9 @@ endif
 
 ################################################################################
 # Local dependencies and builds
-COMPONENT_SOURCES := $(shell find internal/components -name '*.go')
+INTERNAL_GO_SOURCES := $(shell find internal/ -name '*.go')
 
-./bin/khan: ./cmd/khan/main.go ./internal/app/*.go $(COMPONENT_SOURCES)
+./bin/khan: ./cmd/khan/main.go $(INTERNAL_GO_SOURCES)
 	go build -o ./bin/khan ./cmd/khan/main.go
 
 ./.git/hooks/pre-commit: ./bin/pre-commit .pre-commit-config.yaml
