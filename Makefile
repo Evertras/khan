@@ -5,9 +5,6 @@
 # targets.  The top section contains commands, while the bottom contains the
 # dependencies for those commands.
 
-TMPNOCOMMIT: ./bin/bubble-sandbox
-	@./bin/bubble-sandbox
-
 # Ensure everything is ready to go
 .PHONY: default
 default: pre-commit-install
