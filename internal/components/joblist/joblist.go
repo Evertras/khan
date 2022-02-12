@@ -18,14 +18,14 @@ type Model struct {
 
 	table table.Model
 
-	ShowServices bool
-	ShowBatch    bool
+	showServices bool
+	showBatch    bool
 }
 
 func NewEmptyModel() Model {
 	return Model{
-		ShowServices: true,
-		ShowBatch:    true,
+		showServices: true,
+		showBatch:    true,
 	}
 }
 
@@ -38,8 +38,8 @@ const (
 func NewModelWithJobs(jobs []*api.JobListStub) Model {
 	m := Model{
 		jobs:         jobs,
-		ShowServices: true,
-		ShowBatch:    true,
+		showServices: true,
+		showBatch:    true,
 	}
 
 	headers := []table.Header{
@@ -66,12 +66,12 @@ JOBLOOP:
 	for _, job := range m.jobs {
 		switch job.Type {
 		case "batch":
-			if !m.ShowBatch {
+			if !m.showBatch {
 				continue JOBLOOP
 			}
 
 		case "service":
-			if !m.ShowServices {
+			if !m.showServices {
 				continue JOBLOOP
 			}
 		}
@@ -112,11 +112,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "b":
-			m.ShowBatch = !m.ShowBatch
+			m.showBatch = !m.showBatch
 			m.table = m.table.WithRows(m.generateRows())
 
 		case "s":
-			m.ShowServices = !m.ShowServices
+			m.showServices = !m.showServices
 			m.table = m.table.WithRows(m.generateRows()).Focused(true)
 
 		case "g":
@@ -157,9 +157,9 @@ func (m Model) View() string {
 	body := strings.Builder{}
 
 	body.WriteString("Filters: ")
-	body.WriteString(styles.Checkbox("Show (s)ervices", m.ShowServices))
+	body.WriteString(styles.Checkbox("Show (s)ervices", m.showServices))
 	body.WriteString("  ")
-	body.WriteString(styles.Checkbox("Show (b)atch jobs", m.ShowBatch))
+	body.WriteString(styles.Checkbox("Show (b)atch jobs", m.showBatch))
 	body.WriteString("\n")
 	body.WriteString(lipgloss.JoinHorizontal(
 		lipgloss.Top,
