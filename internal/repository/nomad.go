@@ -1,33 +1,26 @@
 package repository
 
 import (
-	"fmt"
+	"sync"
 
 	"github.com/hashicorp/nomad/api"
 )
 
-type Nomad struct {
-	client *api.Client
-}
+var (
+	nomadClientOnce sync.Once
+	nomadClient     *api.Client
+)
 
-func NewDefault() (*Nomad, error) {
-	c, err := api.NewClient(api.DefaultConfig())
+func GetNomadClient() *api.Client {
+	nomadClientOnce.Do(func() {
+		var err error
+		nomadClient, err = api.NewClient(api.DefaultConfig())
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Nomad client with default config: %w", err)
-	}
+		if err != nil {
+			// TODO: Better way?
+			panic(err)
+		}
+	})
 
-	return &Nomad{
-		client: c,
-	}, nil
-}
-
-func (n *Nomad) GetNodes() ([]*api.NodeListStub, error) {
-	list, _, err := n.client.Nodes().List(&api.QueryOptions{})
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to get node list: %w", err)
-	}
-
-	return list, nil
+	return nomadClient
 }

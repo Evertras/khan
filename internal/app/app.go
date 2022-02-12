@@ -74,39 +74,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "N":
 			m.active = activeNodes
-			cmds = append(cmds, func() tea.Msg {
-				c, err := api.NewClient(api.DefaultConfig())
-
-				if err != nil {
-					panic(err)
-				}
-
-				nodes, _, err := c.Nodes().List(&api.QueryOptions{})
-
-				if err != nil {
-					panic(err)
-				}
-
-				return nodes
-			})
+			cmds = append(cmds, m.nodesModel.Init())
 
 		case "J":
 			m.active = activeJobList
-			cmds = append(cmds, func() tea.Msg {
-				c, err := api.NewClient(api.DefaultConfig())
-
-				if err != nil {
-					panic(err)
-				}
-
-				nodes, _, err := c.Jobs().List(&api.QueryOptions{})
-
-				if err != nil {
-					panic(err)
-				}
-
-				return nodes
-			})
+			cmds = append(cmds, m.joblistModel.Init())
 		}
 
 	case tea.WindowSizeMsg:

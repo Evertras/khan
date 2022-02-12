@@ -8,8 +8,11 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/hashicorp/nomad/api"
 
+	"github.com/evertras/khan/internal/repository"
 	"github.com/evertras/khan/internal/styles"
 )
+
+type errMsg error
 
 type Model struct {
 	nodes []*api.NodeListStub
@@ -90,7 +93,17 @@ func NewModelWithNodes(nodes []*api.NodeListStub) Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	return nil
+	return func() tea.Msg {
+		client := repository.GetNomadClient()
+
+		nodes, _, err := client.Nodes().List(&api.QueryOptions{})
+
+		if err != nil {
+			return errMsg(err)
+		}
+
+		return nodes
+	}
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {

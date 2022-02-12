@@ -1,14 +1,19 @@
 package joblist
 
 import (
+	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/bubble-table/table"
 	"github.com/hashicorp/nomad/api"
 
+	"github.com/evertras/khan/internal/repository"
 	"github.com/evertras/khan/internal/styles"
 )
+
+type errMsg error
 
 type Model struct {
 	jobs []*api.JobListStub
@@ -39,18 +44,24 @@ func NewModelWithJobs(jobs []*api.JobListStub) Model {
 		ShowBatch:    true,
 	}
 
-	m.table = m.generateTable()
+	headers := []table.Header{
+		table.NewHeader(tableKeyID, "ID", 15),
+		table.NewHeader(tableKeyName, "Name", 20),
+		table.NewHeader(tableKeyStatus, "Status", 15),
+	}
+
+	rows := m.generateRows()
+
+	m.table = table.New(headers).
+		WithRows(rows).
+		HeaderStyle(styles.Bold).
+		SelectableRows(true).
+		Focused(true)
 
 	return m
 }
 
-func (m Model) generateTable() table.Model {
-	headers := []table.Header{
-		table.NewHeader(tableKeyID, "ID", 20),
-		table.NewHeader(tableKeyName, "Name", 30),
-		table.NewHeader(tableKeyStatus, "Status", 15),
-	}
-
+func (m Model) generateRows() []table.Row {
 	rows := []table.Row{}
 
 JOBLOOP:
@@ -83,14 +94,21 @@ JOBLOOP:
 		rows = append(rows, row)
 	}
 
-	return table.New(headers).
-		WithRows(rows).
-		HeaderStyle(styles.Bold).
-		SelectableRows(true)
+	return rows
 }
 
 func (m Model) Init() tea.Cmd {
-	return nil
+	return func() tea.Msg {
+		c := repository.GetNomadClient()
+
+		jobs, _, err := c.Jobs().List(&api.QueryOptions{})
+
+		if err != nil {
+			return errMsg(fmt.Errorf("failed to get job list: %w", err))
+		}
+
+		return jobs
+	}
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
@@ -107,21 +125,41 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		switch msg.String() {
 		case "b":
 			m.ShowBatch = !m.ShowBatch
-			m.table = m.generateTable()
+			m.table = m.table.WithRows(m.generateRows())
 
 		case "s":
 			m.ShowServices = !m.ShowServices
-			m.table = m.generateTable()
+			m.table = m.table.WithRows(m.generateRows()).Focused(true)
 		}
 	}
 
-	m.table, cmd = m.table.Update(cmd)
+	m.table, cmd = m.table.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
 }
 
+var (
+	styleHelp = lipgloss.NewStyle().Width(30).Padding(1).Foreground(styles.ColorSpecial)
+	styleSubtle = lipgloss.NewStyle().Foreground(styles.ColorSubtle)
+)
+
+func (m Model) genHelpBox() string {
+	deleteHelp := "(d)elete selected"
+	if len(m.table.SelectedRows()) == 0 {
+		deleteHelp = styleSubtle.Render(deleteHelp)
+	}
+
+	return styleHelp.Render("Space/enter to select\n" + deleteHelp + "\n(g)arbage collect")
+}
+
 func (m Model) View() string {
+	if len(m.jobs) == 0 {
+		return ""
+	}
+
+	tableView := m.table.View()
+
 	body := strings.Builder{}
 
 	body.WriteString("Filters: ")
@@ -129,7 +167,11 @@ func (m Model) View() string {
 	body.WriteString("  ")
 	body.WriteString(styles.Checkbox("Show (b)atch jobs", m.ShowBatch))
 	body.WriteString("\n")
-	body.WriteString(m.table.View())
+	body.WriteString(lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		tableView,
+		m.genHelpBox(),
+	))
 
 	return body.String()
 }
