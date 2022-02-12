@@ -34,7 +34,6 @@ const (
 )
 
 func NewModelWithNodes(nodes []*api.NodeListStub) Model {
-	// TODO: Make style global among all headers
 	headers := []table.Header{
 		table.NewHeader(tableKeyID, "ID", 10),
 		table.NewHeader(tableKeyDatacenter, "Datacenter", 12),
