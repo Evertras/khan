@@ -46,9 +46,9 @@ func NewModelWithJobs(jobs []*api.JobListStub) Model {
 
 func (m Model) generateTable() table.Model {
 	headers := []table.Header{
-		table.NewHeader(tableKeyID, "ID", 20).WithStyle(styles.Bold),
-		table.NewHeader(tableKeyName, "Name", 30).WithStyle(styles.Bold),
-		table.NewHeader(tableKeyStatus, "Status", 15).WithStyle(styles.Bold),
+		table.NewHeader(tableKeyID, "ID", 20),
+		table.NewHeader(tableKeyName, "Name", 30),
+		table.NewHeader(tableKeyStatus, "Status", 15),
 	}
 
 	rows := []table.Row{}
@@ -83,7 +83,7 @@ JOBLOOP:
 		rows = append(rows, row)
 	}
 
-	return table.New(headers).WithRows(rows)
+	return table.New(headers).WithRows(rows).HeaderStyle(styles.Bold)
 }
 
 func (m Model) Init() tea.Cmd {

@@ -54,16 +54,14 @@ func (m Model) View() string {
 
 	for i, header := range m.headers {
 		headerSection := fmt.Sprintf(header.fmtString, header.Title)
-		borderStyle := lipgloss.NewStyle()
+		borderStyle := m.headerStyle.Copy()
 
 		if i == 0 {
 			borderStyle = borderStyle.BorderStyle(borderHeaderFirst)
-			//borderStyle = borderStyle.BorderStyle(borderHeaderTriangleFirst)
 		} else if i < len(m.headers)-1 {
 			borderStyle = borderStyle.BorderStyle(borderHeaderMiddle).BorderTop(true).BorderBottom(true).BorderRight(true)
 		} else {
 			borderStyle = borderStyle.BorderStyle(borderHeaderLast).BorderTop(true).BorderBottom(true).BorderRight(true)
-			//borderStyle = borderStyle.BorderStyle(borderHeaderTriangleLast).BorderTop(true).BorderBottom(true).BorderRight(true)
 		}
 
 		headerStrings = append(headerStrings, borderStyle.Render(header.Style.Render(headerSection)))
