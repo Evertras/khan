@@ -4,9 +4,9 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/evertras/bubble-table/table"
 	"github.com/hashicorp/nomad/api"
 
-	"github.com/evertras/khan/internal/components/table"
 	"github.com/evertras/khan/internal/styles"
 )
 
