@@ -6,6 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/hashicorp/nomad/api"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/evertras/khan/internal/repository"
 )
@@ -31,7 +32,35 @@ func garbageCollectCmd() tea.Msg {
 		return errMsg(err)
 	}
 
-	time.Sleep(time.Millisecond * 20)
+	// TODO: Figure out nicer load notifications
+	time.Sleep(time.Millisecond * 200)
 
 	return refreshJobsCmd()
+}
+
+func stopSelectedCmd(ids []string) func() tea.Msg {
+	return func() tea.Msg {
+		eg := errgroup.Group{}
+
+		for _, id := range ids {
+			eg.Go(func() error {
+				client := repository.GetNomadClient()
+
+				_, _, err := client.Jobs().Deregister(id, false, &api.WriteOptions{})
+
+				return err
+			})
+		}
+
+		err := eg.Wait()
+
+		if err != nil {
+			return errMsg(err)
+		}
+
+		// TODO: Figure out nicer load notifications
+		time.Sleep(time.Millisecond * 200)
+
+		return refreshJobsCmd()
+	}
 }

@@ -9,6 +9,7 @@ require (
 	github.com/hashicorp/nomad/api v0.0.0-20220211135303-4afc67b7002e
 	github.com/muesli/termenv v0.11.0
 	github.com/stretchr/testify v1.7.0
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 )
 
 require (
