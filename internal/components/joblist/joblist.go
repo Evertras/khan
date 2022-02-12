@@ -1,7 +1,6 @@
 package joblist
 
 import (
-	"fmt"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -9,7 +8,6 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/hashicorp/nomad/api"
 
-	"github.com/evertras/khan/internal/repository"
 	"github.com/evertras/khan/internal/styles"
 )
 
@@ -98,17 +96,7 @@ JOBLOOP:
 }
 
 func (m Model) Init() tea.Cmd {
-	return func() tea.Msg {
-		c := repository.GetNomadClient()
-
-		jobs, _, err := c.Jobs().List(&api.QueryOptions{})
-
-		if err != nil {
-			return errMsg(fmt.Errorf("failed to get job list: %w", err))
-		}
-
-		return jobs
-	}
+	return refreshJobsCmd
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
@@ -130,6 +118,12 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		case "s":
 			m.ShowServices = !m.ShowServices
 			m.table = m.table.WithRows(m.generateRows()).Focused(true)
+
+		case "g":
+			cmds = append(cmds, garbageCollectCmd)
+
+		case "r":
+			cmds = append(cmds, refreshJobsCmd)
 		}
 	}
 
@@ -140,7 +134,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 var (
-	styleHelp = lipgloss.NewStyle().Width(30).Padding(1).Foreground(styles.ColorSpecial)
+	styleHelp = lipgloss.NewStyle().Width(70).Padding(1).Foreground(styles.ColorSpecial)
 	styleSubtle = lipgloss.NewStyle().Foreground(styles.ColorSubtle)
 )
 
@@ -150,7 +144,7 @@ func (m Model) genHelpBox() string {
 		deleteHelp = styleSubtle.Render(deleteHelp)
 	}
 
-	return styleHelp.Render("Space/enter to select\n" + deleteHelp + "\n(g)arbage collect")
+	return styleHelp.Render("Space/enter to select\n" + deleteHelp + "\n(g)arbage collect\n(r)efresh jobs (clears selections)")
 }
 
 func (m Model) View() string {
