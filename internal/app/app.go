@@ -20,6 +20,8 @@ type Model struct {
 	width  int
 	height int
 
+	connectionInfo string
+
 	active activeScreen
 }
 
@@ -31,12 +33,17 @@ const (
 
 func NewModel() Model {
 	return Model{
-		active: activeMainMenu,
+		active:         activeMainMenu,
+		connectionInfo: api.DefaultConfig().Address,
 	}
 }
 
+type errMsg struct {
+	err error
+}
+
 func (m Model) Init() tea.Cmd {
-	return tea.EnterAltScreen
+	return tea.Batch(tea.EnterAltScreen)
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -126,6 +133,7 @@ func (m Model) View() string {
 		m.renderTab("Home", activeMainMenu),
 		m.renderTab("Nodes", activeNodes),
 		m.renderTab("Jobs", activeJobList),
+		tabGapInfo.Render(m.connectionInfo),
 	)
 
 	gap := tabGap.Render(strings.Repeat(" ", max(0, m.width-lipgloss.Width(row)-2)))

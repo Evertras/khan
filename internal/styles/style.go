@@ -12,7 +12,7 @@ var (
 	dot  = colorFg(" • ", "236")
 
 	// Pre-defined colors
-	ColorSubtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#383838"}
+	ColorSubtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#888888"}
 	ColorHighlight = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
 	ColorSpecial   = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
 

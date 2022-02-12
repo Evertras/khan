@@ -43,6 +43,9 @@ var (
 	tabGapTitle = tabGap.Copy().
 			Bold(true).
 			Foreground(styles.ColorHighlight)
+
+	tabGapInfo = tabGap.Copy().
+			Foreground(styles.ColorSubtle)
 )
 
 func (m Model) renderTab(title string, activeWhen activeScreen) string {
