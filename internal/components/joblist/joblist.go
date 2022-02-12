@@ -83,7 +83,10 @@ JOBLOOP:
 		rows = append(rows, row)
 	}
 
-	return table.New(headers).WithRows(rows).HeaderStyle(styles.Bold)
+	return table.New(headers).
+		WithRows(rows).
+		HeaderStyle(styles.Bold).
+		SelectableRows(true)
 }
 
 func (m Model) Init() tea.Cmd {

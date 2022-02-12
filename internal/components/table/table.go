@@ -8,16 +8,35 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+type MovementMode int
+
+const (
+	columnKeySelect = "___select___"
+)
+
+var (
+	defaultHighlightStyle = lipgloss.NewStyle().Background(lipgloss.Color("#334"))
+)
+
 type Model struct {
 	headers     []Header
 	headerStyle lipgloss.Style
 
 	rows []Row
+
+	selectableRows bool
+
+	rowCursorIndex int
+
+	focused bool
+
+	highlightStyle lipgloss.Style
 }
 
 func New(headers []Header) Model {
 	m := Model{
-		headers: make([]Header, len(headers)),
+		headers:        make([]Header, len(headers)),
+		highlightStyle: defaultHighlightStyle.Copy(),
 	}
 
 	// Do a full deep copy to avoid unexpected edits
@@ -39,11 +58,75 @@ func (m Model) WithRows(rows []Row) Model {
 	return m
 }
 
+func (m Model) SelectableRows(selectable bool) Model {
+	m.selectableRows = selectable
+
+	hasSelectHeader := m.headers[0].Key == columnKeySelect
+
+	if hasSelectHeader != selectable {
+		if selectable {
+			m.headers = append([]Header{
+				NewHeader(columnKeySelect, "[x]", 3),
+			}, m.headers...)
+		} else {
+			m.headers = m.headers[1:]
+		}
+	}
+
+	return m
+}
+
+func (m Model) HighlightStyle(style lipgloss.Style) Model {
+	m.highlightStyle = style
+	return m
+}
+
+func (m Model) Focused(focused bool) Model {
+	m.focused = focused
+	return m
+}
+
 func (m Model) Init() tea.Cmd {
 	return nil
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+	if !m.focused {
+		return m, nil
+	}
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "down", "j":
+			m.rowCursorIndex++
+
+			if m.rowCursorIndex >= len(m.rows) {
+				m.rowCursorIndex = 0
+			}
+
+		case "up", "k":
+			m.rowCursorIndex--
+
+			if m.rowCursorIndex < 0 {
+				m.rowCursorIndex = len(m.rows) - 1
+			}
+
+		case " ", "enter":
+			if !m.selectableRows {
+				break
+			}
+
+			rows := make([]Row, len(m.rows))
+			copy(rows, m.rows)
+
+			rows[m.rowCursorIndex].selected = !rows[m.rowCursorIndex].selected
+
+			m.rows = rows
+		}
+
+	}
+
 	return m, nil
 }
 
@@ -71,8 +154,8 @@ func (m Model) View() string {
 
 	body.WriteString("\n")
 
-	for i, row := range m.rows {
-		body.WriteString(row.render(m.headers, i == len(m.rows)-1))
+	for i := range m.rows {
+		body.WriteString(m.renderRow(i))
 		body.WriteString("\n")
 	}
 

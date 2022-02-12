@@ -40,7 +40,11 @@ func NewModel() Model {
 	}
 
 	return Model{
-		tableModel: table.New(headers).WithRows(rows),
+		tableModel: table.New(headers).
+			WithRows(rows).
+			HeaderStyle(lipgloss.NewStyle().Bold(true)).
+			SelectableRows(true).
+			Focused(true),
 	}
 }
 

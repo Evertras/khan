@@ -11,6 +11,8 @@ type RowData map[string]interface{}
 type Row struct {
 	Style lipgloss.Style
 	Data  RowData
+
+	selected bool
 }
 
 func NewRow(data RowData) Row {
@@ -52,32 +54,49 @@ var borderRowLast = lipgloss.Border{
 	BottomRight: "┛",
 }
 
-func (r Row) render(headers []Header, last bool) string {
+func (m Model) renderRow(i int) string {
+	row := m.rows[i]
+	last := i == len(m.rows)-1
+	highlighted := i == m.rowCursorIndex
+
 	columnStrings := []string{}
 
-	for i, header := range headers {
+	baseStyle := lipgloss.NewStyle()
+
+	if m.focused && highlighted {
+		baseStyle = m.highlightStyle
+	}
+
+	for i, header := range m.headers {
 		var str string
-		if entry, exists := r.Data[header.Key]; exists {
+
+		if header.Key == columnKeySelect {
+			if row.selected {
+				str = "[x]"
+			} else {
+				str = "[ ]"
+			}
+		} else if entry, exists := row.Data[header.Key]; exists {
 			str = fmt.Sprintf("%v", entry)
 		}
 
-		borderStyle := lipgloss.NewStyle()
+		cellStyle := baseStyle.Copy()
 
 		if i == 0 {
-			borderStyle = borderStyle.BorderStyle(borderRowLeft).BorderRight(true).BorderLeft(true)
-		} else if i < len(headers)-1 {
-			borderStyle = borderStyle.BorderStyle(borderRowMiddle).BorderRight(true)
+			cellStyle = cellStyle.BorderStyle(borderRowLeft).BorderRight(true).BorderLeft(true)
+		} else if i < len(m.headers)-1 {
+			cellStyle = cellStyle.BorderStyle(borderRowMiddle).BorderRight(true)
 		} else {
-			borderStyle = borderStyle.BorderStyle(borderRowLast).BorderRight(true)
+			cellStyle = cellStyle.BorderStyle(borderRowLast).BorderRight(true)
 		}
 
 		if last {
-			borderStyle = borderStyle.BorderBottom(true)
+			cellStyle = cellStyle.BorderBottom(true)
 		}
 
-		dataStr := r.Style.Render(fmt.Sprintf(header.fmtString, limitStr(str, header.Width)))
+		dataStr := row.Style.Render(fmt.Sprintf(header.fmtString, limitStr(str, header.Width)))
 
-		columnStrings = append(columnStrings, borderStyle.Render(dataStr))
+		columnStrings = append(columnStrings, cellStyle.Render(dataStr))
 	}
 
 	return lipgloss.JoinHorizontal(lipgloss.Bottom, columnStrings...)
