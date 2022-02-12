@@ -31,6 +31,8 @@ type Model struct {
 	focused bool
 
 	highlightStyle lipgloss.Style
+
+	selectedRows []Row
 }
 
 func New(headers []Header) Model {
@@ -74,6 +76,14 @@ func (m Model) SelectableRows(selectable bool) Model {
 	}
 
 	return m
+}
+
+func (m Model) HighlightedRow() Row {
+	return m.rows[m.rowCursorIndex]
+}
+
+func (m Model) SelectedRows() []Row {
+	return m.selectedRows
 }
 
 func (m Model) HighlightStyle(style lipgloss.Style) Model {
@@ -123,6 +133,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			rows[m.rowCursorIndex].selected = !rows[m.rowCursorIndex].selected
 
 			m.rows = rows
+
+			m.selectedRows = []Row{}
+
+			for _, row := range m.rows {
+				if row.selected {
+					m.selectedRows = append(m.selectedRows, row)
+				}
+			}
 		}
 
 	}

@@ -1,9 +1,19 @@
 package main
 
 import (
+	"fmt"
+	"strings"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/khan/internal/components/table"
+)
+
+const (
+	columnKeyID          = "id"
+	columnKeyName        = "name"
+	columnKeyDescription = "description"
+	columnKeyCount       = "count"
 )
 
 type Model struct {
@@ -12,30 +22,30 @@ type Model struct {
 
 func NewModel() Model {
 	headers := []table.Header{
-		table.NewHeader("id", "ID", 5).WithStyle(lipgloss.NewStyle().Bold(true)),
-		table.NewHeader("name", "Name", 10),
-		table.NewHeader("description", "Description", 30),
-		table.NewHeader("count", "#", 5),
+		table.NewHeader(columnKeyID, "ID", 5).WithStyle(lipgloss.NewStyle().Bold(true)),
+		table.NewHeader(columnKeyName, "Name", 10),
+		table.NewHeader(columnKeyDescription, "Description", 30),
+		table.NewHeader(columnKeyCount, "#", 5),
 	}
 
 	rows := []table.Row{
 		table.NewRow(table.RowData{
-			"id":          "abc",
-			"name":        "Hello",
-			"description": "The first table entry, ever",
-			"count":       4,
+			columnKeyID:          "abc",
+			columnKeyName:        "Hello",
+			columnKeyDescription: "The first table entry, ever",
+			columnKeyCount:       4,
 		}),
 		table.NewRow(table.RowData{
-			"id":          "123",
-			"name":        "Oh no",
-			"description": "Super bold!",
-			"count":       17,
+			columnKeyID:          "123",
+			columnKeyName:        "Oh no",
+			columnKeyDescription: "Super bold!",
+			columnKeyCount:       17,
 		}).WithStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("9")).Bold(true)),
 		table.NewRow(table.RowData{
-			"id":          "def",
-			"name":        "Yay",
-			"description": "This is a really, really, really long description that will get cut off",
-			"count":       "N/A",
+			columnKeyID:          "def",
+			columnKeyName:        "Yay",
+			columnKeyDescription: "This is a really, really, really long description that will get cut off",
+			columnKeyCount:       "N/A",
 		}),
 	}
 
@@ -73,5 +83,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	return m.tableModel.View()
+	body := strings.Builder{}
+
+	highlightedRow := m.tableModel.HighlightedRow()
+
+	body.WriteString(fmt.Sprintf("Currently looking at ID: %s\n", highlightedRow.Data[columnKeyID]))
+
+	selectedIDs := []string{}
+
+	for _, row := range m.tableModel.SelectedRows() {
+		// Slightly dangerous type assumption but fine for demo
+		selectedIDs = append(selectedIDs, row.Data[columnKeyID].(string))
+	}
+
+	body.WriteString(fmt.Sprintf("SelectedIDs: %s\n", strings.Join(selectedIDs, ", ")))
+
+	body.WriteString(m.tableModel.View())
+
+	return body.String()
 }
