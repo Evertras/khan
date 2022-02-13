@@ -37,16 +37,16 @@ const (
 )
 
 func NewModelWithNodes(nodes []*api.NodeListStub) Model {
-	headers := []table.Header{
-		table.NewHeader(tableKeyID, "ID", 10),
-		table.NewHeader(tableKeyDatacenter, "Datacenter", 12),
-		table.NewHeader(tableKeyName, "Name", 30),
-		table.NewHeader(tableKeyStatus, "Status", 8),
-		table.NewHeader(tableKeyEligible, "Eligibility", 14),
-		table.NewHeader(tableKeyDrain, "Draining", len("Draining")+1),
-		table.NewHeader(tableKeyAddress, "Address", 13),
-		table.NewHeader(tableKeyDrivers, "Drivers", 40),
-		table.NewHeader(tableKeyVersion, "Version", len("Version")+1),
+	headers := []table.Column{
+		table.NewColumn(tableKeyID, "ID", 10),
+		table.NewColumn(tableKeyDatacenter, "Datacenter", 12),
+		table.NewColumn(tableKeyName, "Name", 30),
+		table.NewColumn(tableKeyStatus, "Status", 8),
+		table.NewColumn(tableKeyEligible, "Eligibility", 14),
+		table.NewColumn(tableKeyDrain, "Draining", len("Draining")+1),
+		table.NewColumn(tableKeyAddress, "Address", 13),
+		table.NewColumn(tableKeyDrivers, "Drivers", 40),
+		table.NewColumn(tableKeyVersion, "Version", len("Version")+1),
 	}
 
 	rows := []table.Row{}

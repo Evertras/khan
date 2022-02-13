@@ -48,10 +48,10 @@ func NewModelWithJobs(jobs []*api.JobListStub) Model {
 		lastUpdated:  time.Now(),
 	}
 
-	headers := []table.Header{
-		table.NewHeader(tableKeyID, "ID", 15),
-		table.NewHeader(tableKeyName, "Name", 20),
-		table.NewHeader(tableKeyStatus, "Status", 15),
+	headers := []table.Column{
+		table.NewColumn(tableKeyID, "ID", 15),
+		table.NewColumn(tableKeyName, "Name", 20),
+		table.NewColumn(tableKeyStatus, "Status", 15),
 	}
 
 	rows := m.generateRows()
