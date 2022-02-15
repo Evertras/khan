@@ -48,7 +48,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
-			// Ctrl+C always quits as a safety valve
+			// Ctrl+C or q always quit as a safety valve
 			cmds = append(cmds, tea.Quit)
 
 		case "H":
