@@ -1,6 +1,12 @@
 default_stages: [commit, push]
 
 repos:
+- repo: local
+  hooks:
+  - id: test
+    name: Run all tests
+    entry: make test
+    language: system
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.1.0
   hooks:
