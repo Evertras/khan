@@ -76,10 +76,6 @@ func (m Model) genHelpBox() string {
 }
 
 func (m Model) viewMain() string {
-	if len(m.jobs) == 0 {
-		return ""
-	}
-
 	tableView := m.table.View()
 
 	body := strings.Builder{}

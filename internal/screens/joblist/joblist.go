@@ -27,10 +27,17 @@ type Model struct {
 	errorMessage string
 }
 
+var columns = []table.Column{
+	table.NewColumn(tableKeyID, "ID", 15),
+	table.NewColumn(tableKeyName, "Name", 20),
+	table.NewColumn(tableKeyStatus, "Status", 15),
+}
+
 func NewEmptyModel() Model {
 	return Model{
 		showServices: true,
 		showBatch:    true,
+		table:        table.New(columns).SelectableRows(true),
 	}
 }
 
@@ -48,15 +55,9 @@ func NewModelWithJobs(jobs []*api.JobListStub) Model {
 		lastUpdated:  time.Now(),
 	}
 
-	headers := []table.Column{
-		table.NewColumn(tableKeyID, "ID", 15),
-		table.NewColumn(tableKeyName, "Name", 20),
-		table.NewColumn(tableKeyStatus, "Status", 15),
-	}
-
 	rows := m.generateRows()
 
-	m.table = table.New(headers).
+	m.table = table.New(columns).
 		WithRows(rows).
 		HeaderStyle(styles.Bold).
 		SelectableRows(true).
