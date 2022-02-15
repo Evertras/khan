@@ -7,6 +7,7 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/hashicorp/nomad/api"
 
+	"github.com/evertras/khan/internal/components/errview"
 	"github.com/evertras/khan/internal/styles"
 )
 
@@ -24,7 +25,7 @@ type Model struct {
 
 	confirmStopIDs []string
 
-	errorMessage string
+	errorMessage errview.Model
 }
 
 var columns = []table.Column{
@@ -38,6 +39,7 @@ func NewEmptyModel() Model {
 		showServices: true,
 		showBatch:    true,
 		table:        table.New(columns).SelectableRows(true),
+		errorMessage: errview.NewEmptyModel(),
 	}
 }
 
@@ -53,6 +55,7 @@ func NewModelWithJobs(jobs []*api.JobListStub) Model {
 		showServices: true,
 		showBatch:    true,
 		lastUpdated:  time.Now(),
+		errorMessage: errview.NewEmptyModel(),
 	}
 
 	rows := m.generateRows()
@@ -73,11 +76,13 @@ func (m Model) Init() tea.Cmd {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case errMsg:
-		m.errorMessage = msg.Error()
+		m.errorMessage = errview.NewModelWithMessage(msg.Error())
 	}
 
-	if m.errorMessage != "" {
-		return m.updateError(msg)
+	if m.errorMessage.Active() {
+		var cmd tea.Cmd
+		m.errorMessage, cmd = m.errorMessage.Update(msg)
+		return m, cmd
 	}
 
 	if len(m.confirmStopIDs) != 0 {
@@ -88,8 +93,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	if m.errorMessage != "" {
-		return m.viewError()
+	if m.errorMessage.Active() {
+		return m.errorMessage.View()
 	}
 
 	if len(m.confirmStopIDs) != 0 {

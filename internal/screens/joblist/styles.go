@@ -10,5 +10,4 @@ var (
 	styleSubtle = lipgloss.NewStyle().Foreground(styles.ColorSubtle)
 
 	styleConfirmWarning = styles.Error.Copy().Padding(2)
-	styleErrorMessage   = styles.Error.Copy().Padding(2).Bold(true)
 )

@@ -53,14 +53,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "H":
 			m.screen = home.NewModel()
+			m.activeTab = activeHome
 			cmds = append(cmds, m.screen.Init())
 
 		case "N":
 			m.screen = nodes.NewEmptyModel()
+			m.activeTab = activeNodes
 			cmds = append(cmds, m.screen.Init())
 
 		case "J":
 			m.screen = joblist.NewEmptyModel()
+			m.activeTab = activeJobList
 			cmds = append(cmds, m.screen.Init())
 		}
 
