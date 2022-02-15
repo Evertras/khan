@@ -5,6 +5,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/evertras/khan/internal/screens"
 	"github.com/evertras/khan/internal/screens/home"
 	"github.com/evertras/khan/internal/screens/joblist"
 	"github.com/evertras/khan/internal/screens/nodes"
@@ -31,6 +32,15 @@ func NewModel() Model {
 
 type errMsg struct {
 	err error
+}
+
+func screenSizeFromWindowSizeCmd(width, height int) func() tea.Msg {
+	return func() tea.Msg {
+		return screens.Size{
+			Width:  width,
+			Height: height - 3,
+		}
+	}
 }
 
 func (m Model) Init() tea.Cmd {
@@ -62,7 +72,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, m.screen.Init())
 
 		case "J":
-			m.screen = joblist.NewEmptyModel()
+			m.screen = joblist.NewEmptyModel(screens.Size{
+				Width: m.width,
+				Height: m.height-3,
+			})
 			m.activeTab = activeJobList
 			cmds = append(cmds, m.screen.Init())
 		}
@@ -70,6 +83,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+
+		m.screen, cmd = m.screen.Update(screens.Size{
+			Width:  msg.Width,
+			Height: msg.Height - 3,
+		})
+		cmds = append(cmds, cmd)
 	}
 
 	return m, tea.Batch(cmds...)

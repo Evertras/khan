@@ -8,12 +8,16 @@ import (
 	"github.com/hashicorp/nomad/api"
 
 	"github.com/evertras/khan/internal/components/errview"
+	"github.com/evertras/khan/internal/components/logs"
+	"github.com/evertras/khan/internal/screens"
 	"github.com/evertras/khan/internal/styles"
 )
 
 type errMsg error
 
 type Model struct {
+	size screens.Size
+
 	jobs []*api.JobListStub
 
 	table table.Model
@@ -26,6 +30,8 @@ type Model struct {
 	confirmStopIDs []string
 
 	errorMessage errview.Model
+
+	logView logs.Model
 }
 
 var columns = []table.Column{
@@ -34,12 +40,13 @@ var columns = []table.Column{
 	table.NewColumn(tableKeyStatus, "Status", 15),
 }
 
-func NewEmptyModel() Model {
+func NewEmptyModel(size screens.Size) Model {
 	return Model{
 		showServices: true,
 		showBatch:    true,
 		table:        table.New(columns).SelectableRows(true),
 		errorMessage: errview.NewEmptyModel(),
+		size:         size,
 	}
 }
 
@@ -49,13 +56,14 @@ const (
 	tableKeyStatus = "status"
 )
 
-func NewModelWithJobs(jobs []*api.JobListStub) Model {
+func NewModelWithJobs(size screens.Size, jobs []*api.JobListStub) Model {
 	m := Model{
 		jobs:         jobs,
 		showServices: true,
 		showBatch:    true,
 		lastUpdated:  time.Now(),
 		errorMessage: errview.NewEmptyModel(),
+		size:         size,
 	}
 
 	rows := m.generateRows()
@@ -89,6 +97,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateConfirmStop(msg)
 	}
 
+	if logCancel != nil {
+		return m.updateLogView(msg)
+	}
+
 	return m.updateMainView(msg)
 }
 
@@ -99,6 +111,10 @@ func (m Model) View() string {
 
 	if len(m.confirmStopIDs) != 0 {
 		return m.viewConfirmStop()
+	}
+
+	if logCancel != nil {
+		return m.viewLogs()
 	}
 
 	return m.viewMain()

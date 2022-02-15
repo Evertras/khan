@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/hashicorp/nomad/api"
 
+	"github.com/evertras/khan/internal/screens"
 	"github.com/evertras/khan/internal/styles"
 )
 
@@ -19,7 +20,10 @@ func (m Model) updateMainView(msg tea.Msg) (Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case []*api.JobListStub:
-		m = NewModelWithJobs(msg)
+		m = NewModelWithJobs(m.size, msg)
+
+	case screens.Size:
+		m.size = msg
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -36,6 +40,16 @@ func (m Model) updateMainView(msg tea.Msg) (Model, tea.Cmd) {
 
 		case "r":
 			cmds = append(cmds, refreshJobsCmd)
+
+		case "f":
+			if len(m.jobs) == 0 {
+				break
+			}
+
+			jobID := m.table.HighlightedRow().Data[tableKeyID].(string)
+			cmds = append(cmds, showLogsForJobCmd(jobID))
+
+			m.logView, _ = m.logView.Update(m.size)
 
 		case "s":
 			ids := []string{}
