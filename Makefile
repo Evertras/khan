@@ -5,10 +5,10 @@
 # targets.  The top section contains commands, while the bottom contains the
 # dependencies for those commands.
 
-# Ensure everything is ready to go
+# Build and run Khan
 .PHONY: default
-default: pre-commit-install
-	@echo Ready to go!
+default: ./bin/khan
+	@./bin/khan
 
 # Clean temporary files
 .PHONY: clean

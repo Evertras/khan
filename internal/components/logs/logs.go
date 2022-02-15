@@ -1,17 +1,23 @@
 package logs
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/evertras/khan/internal/screens"
 )
 
 type Model struct {
 	viewport viewport.Model
 	ready    bool
 
-	jobID   string
-	allocID string
+	jobID     string
+	allocID   string
+	taskGroup string
+	task      string
 
 	contents string
 
@@ -22,7 +28,24 @@ func NewJobLogs(jobID string) Model {
 	return Model{
 		jobID:    jobID,
 		contents: "Loading...",
+
+		useHighPerformanceRenderer: true,
 	}
+}
+
+func (m Model) WithJobInfo(jobID, allocID, taskGroup, task string) Model {
+	m.jobID = jobID
+	m.allocID = allocID
+	m.taskGroup = taskGroup
+	m.task = task
+	return m
+}
+
+func (m Model) Append(data string) Model {
+	m.contents += data
+	m.viewport.SetContent(m.contents)
+
+	return m
 }
 
 func (m Model) Init() tea.Cmd {
@@ -41,8 +64,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-	case tea.WindowSizeMsg:
-		headerHeight := lipgloss.Height("x")
+	case screens.Size:
+		headerHeight := 2
 		footerHeight := lipgloss.Height("x")
 		verticalMarginHeight := headerHeight + footerHeight
 
@@ -85,5 +108,15 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	return m.viewport.View()
+	body := strings.Builder{}
+
+	if m.jobID == "" {
+		body.WriteString("Logs loading...")
+	} else {
+		body.WriteString(fmt.Sprintf("%s - %s %s/%s\n", m.jobID, m.allocID, m.taskGroup, m.task))
+	}
+	body.WriteString(strings.Repeat("=", m.viewport.Width))
+	body.WriteString("\n")
+	body.WriteString(m.viewport.View())
+	return body.String()
 }
