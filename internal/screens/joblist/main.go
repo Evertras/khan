@@ -69,6 +69,7 @@ func (m Model) genHelpBox() string {
 		deleteHelp,
 		"(g)arbage collect (clears selections)",
 		"(r)efresh jobs (clears selections)",
+		"(f)ollow logs of random alloc",
 	}
 
 	return styleHelp.Render(strings.Join(helpLines, "\n"))

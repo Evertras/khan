@@ -5,6 +5,14 @@ import (
 	"github.com/evertras/khan/internal/styles"
 )
 
+type currentActiveTab int
+
+const (
+	activeHome currentActiveTab = iota
+	activeNodes
+	activeJobList
+)
+
 var (
 	activeTabBorder = lipgloss.Border{
 		Top:         "─",
@@ -48,9 +56,9 @@ var (
 			Foreground(styles.ColorSubtle)
 )
 
-func (m Model) renderTab(title string, activeWhen activeScreen) string {
+func (m Model) renderTab(title string, activeWhen currentActiveTab) string {
 	str := styles.Title.Render(title[:1]) + title[1:]
-	if activeWhen == m.active {
+	if activeWhen == m.activeTab {
 		return activeTab.Render(str)
 	} else {
 		return tab.Render(str)

@@ -5,35 +5,26 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/evertras/khan/internal/screens/home"
+	"github.com/evertras/khan/internal/screens/joblist"
+	"github.com/evertras/khan/internal/screens/nodes"
 	"github.com/hashicorp/nomad/api"
-
-	"github.com/evertras/khan/internal/components/joblist"
-	"github.com/evertras/khan/internal/components/nodes"
 )
 
-type activeScreen int
-
 type Model struct {
-	nodesModel   nodes.Model
-	joblistModel joblist.Model
+	screen tea.Model
+
+	activeTab currentActiveTab
 
 	width  int
 	height int
 
 	connectionInfo string
-
-	active activeScreen
 }
-
-const (
-	activeMainMenu activeScreen = iota
-	activeNodes
-	activeJobList
-)
 
 func NewModel() Model {
 	return Model{
-		active:         activeMainMenu,
+		screen:         home.NewModel(),
 		connectionInfo: api.DefaultConfig().Address,
 	}
 }
@@ -50,17 +41,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	cmds := make([]tea.Cmd, 0)
 
-	switch m.active {
-	case activeMainMenu:
-
-	case activeNodes:
-		m.nodesModel, cmd = m.nodesModel.Update(msg)
-		cmds = append(cmds, cmd)
-
-	case activeJobList:
-		m.joblistModel, cmd = m.joblistModel.Update(msg)
-		cmds = append(cmds, cmd)
-	}
+	m.screen, cmd = m.screen.Update(msg)
+	cmds = append(cmds, cmd)
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -70,15 +52,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, tea.Quit)
 
 		case "H":
-			m.active = activeMainMenu
+			m.screen = home.NewModel()
+			cmds = append(cmds, m.screen.Init())
 
 		case "N":
-			m.active = activeNodes
-			cmds = append(cmds, m.nodesModel.Init())
+			m.screen = nodes.NewEmptyModel()
+			cmds = append(cmds, m.screen.Init())
 
 		case "J":
-			m.active = activeJobList
-			cmds = append(cmds, m.joblistModel.Init())
+			m.screen = joblist.NewEmptyModel()
+			cmds = append(cmds, m.screen.Init())
 		}
 
 	case tea.WindowSizeMsg:
@@ -102,7 +85,7 @@ func (m Model) View() string {
 	row := lipgloss.JoinHorizontal(
 		lipgloss.Center,
 		tabGapTitle.Render("Khan"),
-		m.renderTab("Home", activeMainMenu),
+		m.renderTab("Home", activeHome),
 		m.renderTab("Nodes", activeNodes),
 		m.renderTab("Jobs", activeJobList),
 		tabGapInfo.Render(m.connectionInfo),
@@ -115,18 +98,7 @@ func (m Model) View() string {
 	body.WriteString(row)
 	body.WriteString("\n")
 
-	switch m.active {
-	case activeMainMenu:
-		// TODO: Proper lipgloss style
-		body.WriteString(" Welcome to Khan!  Press the first letter (with shift) of the tabs above to visit each tab.\n\n")
-		body.WriteString(" Press 'q' or ctrl+C at any time to quit.")
-
-	case activeNodes:
-		body.WriteString(m.nodesModel.View())
-
-	case activeJobList:
-		body.WriteString(m.joblistModel.View())
-	}
+	body.WriteString(m.screen.View())
 
 	return body.String()
 }

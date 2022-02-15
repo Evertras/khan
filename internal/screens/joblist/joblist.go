@@ -69,7 +69,7 @@ func (m Model) Init() tea.Cmd {
 	return refreshJobsCmd
 }
 
-func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case errMsg:
 		m.errorMessage = msg.Error()
