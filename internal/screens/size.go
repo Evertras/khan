@@ -1,6 +1,6 @@
 package screens
 
 type Size struct {
-	Width int
+	Width  int
 	Height int
 }

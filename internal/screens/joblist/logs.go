@@ -24,7 +24,7 @@ type logErrMsg error
 
 func (m Model) updateLogView(msg tea.Msg) (Model, tea.Cmd) {
 	var (
-		cmd tea.Cmd
+		cmd  tea.Cmd
 		cmds []tea.Cmd
 	)
 
