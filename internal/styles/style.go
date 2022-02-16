@@ -23,6 +23,7 @@ var (
 
 	Title    = lipgloss.NewStyle().Foreground(ColorHighlight).Bold(true)
 	Subtitle = lipgloss.NewStyle().Foreground(ColorSubtle)
+	Header   = lipgloss.NewStyle().Foreground(ColorSpecial).Bold(true)
 )
 
 func Checkbox(label string, checked bool) string {
@@ -38,11 +39,4 @@ func colorFg(val, color string) string {
 
 func makeFgStyle(color string) func(string) string {
 	return termenv.Style{}.Foreground(term.Color(color)).Styled
-}
-
-func Header(title, subtitle string) string {
-	return fmt.Sprintf("%s\n%s\n-----------------------------------\n",
-		Title.Render(title),
-		Subtitle.Render(subtitle),
-	)
 }

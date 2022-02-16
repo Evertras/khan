@@ -8,6 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/khan/internal/screens"
+	"github.com/evertras/khan/internal/styles"
 )
 
 type Model struct {
@@ -111,9 +112,16 @@ func (m Model) View() string {
 	if m.jobID == "" {
 		body.WriteString("Logs loading...")
 	} else {
-		body.WriteString(fmt.Sprintf("%s - %s %s/%s\n", m.jobID, m.allocID, m.taskGroup, m.task))
+		jobRow := fmt.Sprintf(
+			"%s %s %s/%s\n",
+			styles.Header.Render(m.jobID),
+			styles.Subtitle.Render(m.allocID),
+			styles.Error.Render(m.taskGroup),
+			styles.Good.Render(m.task),
+		)
+		jobRow += styles.Title.Render(strings.Repeat("=", m.viewport.Width))
+		body.WriteString(jobRow)
 	}
-	body.WriteString(strings.Repeat("=", m.viewport.Width))
 	body.WriteString("\n")
 	body.WriteString(m.viewport.View())
 	return body.String()
