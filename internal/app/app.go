@@ -73,8 +73,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "J":
 			m.screen = joblist.NewEmptyModel(screens.Size{
-				Width: m.width,
-				Height: m.height-3,
+				Width:  m.width,
+				Height: m.height - 3,
 			})
 			m.activeTab = activeJobList
 			cmds = append(cmds, m.screen.Init())

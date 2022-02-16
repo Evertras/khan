@@ -96,7 +96,16 @@ func showLogsForJobCmd(jobID string) func() tea.Msg {
 			taskGroup = *job.TaskGroups[0].Name
 		}
 
-		task := job.TaskGroups[0].Tasks[0].Name
+		// Default to first regardless of lifecycle hook
+		taskName := job.TaskGroups[0].Tasks[0].Name
+
+		// Try and find one without a lifecycle hook to use
+		for _, task := range job.TaskGroups[0].Tasks {
+			if task.Lifecycle == nil {
+				taskName = task.Name
+				break
+			}
+		}
 
 		allocs, _, err := client.Jobs().Allocations(jobID, false, &api.QueryOptions{})
 
@@ -125,14 +134,14 @@ func showLogsForJobCmd(jobID string) func() tea.Msg {
 
 		logCtx, logCancel = context.WithCancel(context.Background())
 
-		streamCh, errCh := client.AllocFS().Logs(alloc, true, task, "stdout", "start", 0, logCtx.Done(), &api.QueryOptions{})
+		streamCh, errCh := client.AllocFS().Logs(alloc, true, taskName, "stdout", "start", 0, logCtx.Done(), &api.QueryOptions{})
 		logMu.Unlock()
 
 		return logStreamingMsg{
 			jobID:     jobID,
 			allocID:   alloc.ID,
 			taskGroup: taskGroup,
-			task:      task,
+			task:      taskName,
 			logs:      streamCh,
 			errs:      errCh,
 		}
