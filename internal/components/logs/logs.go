@@ -38,6 +38,7 @@ func (m Model) WithJobInfo(jobID, allocID, taskGroup, task string) Model {
 	m.allocID = allocID
 	m.taskGroup = taskGroup
 	m.task = task
+	m.contents = ""
 	return m
 }
 
