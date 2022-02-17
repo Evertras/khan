@@ -51,6 +51,13 @@ func (m Model) updateMainView(msg tea.Msg) (Model, tea.Cmd) {
 		case "r":
 			cmds = append(cmds, refreshJobsCmd)
 
+		case "i":
+			if len(m.jobs) == 0 {
+				break
+			}
+
+			cmds = append(cmds, inspectJobCmd(m.table.HighlightedRow().Data[tableKeyID].(string)))
+
 		case "f":
 			if len(m.jobs) == 0 {
 				break

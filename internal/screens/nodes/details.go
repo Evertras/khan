@@ -30,7 +30,7 @@ func (m Model) viewDetails() string {
 		body.WriteString(styles.Key.Render(k+": ") + v + "\n")
 	}
 
-	l("id", d.Name)
+	l("id", d.ID)
 	l("name", d.Name)
 	l("status", d.Status)
 	l("elgbl", d.SchedulingEligibility)

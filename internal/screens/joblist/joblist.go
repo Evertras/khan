@@ -73,6 +73,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.table = m.table.WithRows(m.generateRows())
 		m.lastUpdated = time.Now()
 
+	case *api.Job:
+		m.inspect = msg
+
 	case errMsg:
 		m.errorMessage = errview.NewModelWithMessage(msg.Error())
 	}
@@ -91,6 +94,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateLogView(msg)
 	}
 
+	if m.inspect != nil {
+		return m.updateInspect(msg)
+	}
+
 	return m.updateMainView(msg)
 }
 
@@ -105,6 +112,10 @@ func (m Model) View() string {
 
 	if logCancel != nil {
 		return m.viewLogs()
+	}
+
+	if m.inspect != nil {
+		return m.viewInspect()
 	}
 
 	return m.viewMain()
