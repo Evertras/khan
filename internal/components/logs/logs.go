@@ -27,12 +27,14 @@ type Model struct {
 }
 
 func NewJobLogs(jobID string) Model {
-	return Model{
+	m := Model{
 		jobID:    jobID,
 		contents: "Loading...",
 
 		useHighPerformanceRenderer: true,
 	}
+
+	return m
 }
 
 func (m Model) WithJobInfo(jobID, allocID, taskGroup, task string) Model {
@@ -63,6 +65,14 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		// Some additional navigation keys on top of the default
+		switch msg.String() {
+		case "g":
+			m.viewport.GotoTop()
+
+		case "G":
+			m.viewport.GotoBottom()
+		}
 
 	case screens.Size:
 		headerHeight := 2
@@ -76,6 +86,8 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			// quickly, though asynchronously, which is why we wait for them
 			// here.
 			m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
+			m.viewport.KeyMap.PageDown.SetKeys("f", " ", "ctrl+f", "pgdown")
+			m.viewport.KeyMap.PageUp.SetKeys("b", "ctrl+b", "pgup")
 			m.viewport.YPosition = headerHeight
 			m.viewport.HighPerformanceRendering = false
 			m.viewport.SetContent(wordwrap.String(m.contents, msg.Width))
@@ -106,13 +118,6 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }
 
 func (m Model) footerView() string {
