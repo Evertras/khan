@@ -22,3 +22,7 @@ vendor/
 # Envrc with direnv
 .envrc
 
+# Generated local test Nomad config + data dir
+nomad/dev-server.hcl
+nomad/data
+

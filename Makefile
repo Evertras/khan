@@ -12,13 +12,20 @@ default: ./bin/khan
 
 # Clean temporary files
 .PHONY: clean
-clean:
+clean: clean-nomad clean-bin
+
+.PHONY: clean-nomad
+clean-nomad:
+	rm -rf nomad/data
+
+.PHONY: clean-bin
+clean-bin:
 	rm -rf bin
 
 # Run a Nomad server for testing purposes
 .PHONY: nomad-test-server
-nomad-test-server: ./bin/nomad
-	nomad agent -dev
+nomad-test-server: ./bin/nomad ./nomad/dev-server.hcl
+	nomad agent -config ./nomad/dev-server.hcl
 
 # Build everything
 .PHONY: build
@@ -76,6 +83,10 @@ INTERNAL_GO_SOURCES := $(shell find internal/ -name '*.go')
 
 ./.git/hooks/pre-push: ./bin/pre-commit .pre-commit-config.yaml
 	./bin/pre-commit install -t pre-push
+
+# Doesn't depend on template to avoid overwriting unexpectedly
+./nomad/dev-server.hcl:
+	@sed 's|DATADIR|$(shell pwd)/nomad/data|g' ./nomad/dev-server.tpl.hcl > ./nomad/dev-server.hcl
 
 .PHONY: pre-commit-install
 pre-commit-install: ./.git/hooks/pre-commit ./.git/hooks/pre-push
