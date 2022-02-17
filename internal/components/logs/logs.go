@@ -65,7 +65,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 
 	case screens.Size:
 		headerHeight := 2
-		footerHeight := lipgloss.Height("x")
+		footerHeight := 1
 		verticalMarginHeight := headerHeight + footerHeight
 
 		if !m.ready {
@@ -106,6 +106,22 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func (m Model) footerView() string {
+	footerText := fmt.Sprintf("<%3.f%%>", m.viewport.ScrollPercent()*100)
+
+	info := styles.Subtitle.Render(footerText)
+	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info)))
+
+	return lipgloss.JoinHorizontal(lipgloss.Center, info, line)
+}
+
 func (m Model) View() string {
 	body := strings.Builder{}
 
@@ -113,16 +129,20 @@ func (m Model) View() string {
 		body.WriteString("Logs loading...")
 	} else {
 		jobRow := fmt.Sprintf(
-			"%s %s %s/%s\n",
+			"Logs - %s %s %s/%s\n",
 			styles.Header.Render(m.jobID),
 			styles.Subtitle.Render(m.allocID),
 			styles.Error.Render(m.taskGroup),
 			styles.Good.Render(m.task),
 		)
-		jobRow += styles.Title.Render(strings.Repeat("=", m.viewport.Width))
+		jobRow += styles.Title.Render(strings.Repeat("─", m.viewport.Width))
 		body.WriteString(jobRow)
 	}
+
 	body.WriteString("\n")
 	body.WriteString(m.viewport.View())
+	body.WriteString("\n")
+	body.WriteString(m.footerView())
+
 	return body.String()
 }
