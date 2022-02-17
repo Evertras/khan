@@ -32,6 +32,15 @@ func (m Model) updateLogView(msg tea.Msg) (Model, tea.Cmd) {
 	case logStreamingMsg:
 		m.logView = m.logView.WithJobInfo(msg.jobID, msg.allocID, msg.taskGroup, msg.task)
 		cmds = append(cmds, func() tea.Msg {
+			return logReceivedMsg{
+				logStreamingMsg:  msg,
+				receivedLogChunk: "",
+			}
+		})
+
+	case logReceivedMsg:
+		m.logView = m.logView.Append(msg.receivedLogChunk)
+		cmds = append(cmds, func() tea.Msg {
 			select {
 			case frame, ok := <-msg.logs:
 				if !ok {
@@ -39,7 +48,7 @@ func (m Model) updateLogView(msg tea.Msg) (Model, tea.Cmd) {
 				}
 
 				return logReceivedMsg{
-					logStreamingMsg: msg,
+					logStreamingMsg: msg.logStreamingMsg,
 
 					receivedLogChunk: string(frame.Data),
 				}
@@ -52,9 +61,6 @@ func (m Model) updateLogView(msg tea.Msg) (Model, tea.Cmd) {
 				return logErrMsg(err)
 			}
 		})
-
-	case logReceivedMsg:
-		m.logView = m.logView.Append(msg.receivedLogChunk)
 
 	case logErrMsg:
 		m.errorMessage = errview.NewModelWithMessage(msg.Error())
