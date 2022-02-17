@@ -89,6 +89,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		} else {
 			m.viewport.Width = msg.Width
 			m.viewport.Height = msg.Height - verticalMarginHeight
+			m.viewport.SetContent(wordwrap.String(m.contents, msg.Width))
 		}
 
 		if m.useHighPerformanceRenderer {
