@@ -147,3 +147,17 @@ func showLogsForJobCmd(jobID string) func() tea.Msg {
 		}
 	}
 }
+
+func inspectJobCmd(jobID string) func() tea.Msg {
+	return func() tea.Msg {
+		client := repository.GetNomadClient()
+
+		job, _, err := client.Jobs().Info(jobID, &api.QueryOptions{})
+
+		if err != nil {
+			return errMsg(err)
+		}
+
+		return job
+	}
+}

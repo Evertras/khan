@@ -6,11 +6,24 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/hashicorp/nomad/api"
 
+	"github.com/evertras/bubble-table/table"
 	"github.com/evertras/khan/internal/screens"
 	"github.com/evertras/khan/internal/styles"
 )
+
+func genListTable() table.Model {
+	columns := []table.Column{
+		table.NewColumn(tableKeyID, "ID", 15),
+		table.NewColumn(tableKeyName, "Name", 20),
+		table.NewColumn(tableKeyStatus, "Status", 15),
+	}
+
+	return table.New(columns).
+		SelectableRows(true).
+		Focused(true).
+		HeaderStyle(styles.Bold)
+}
 
 func (m Model) updateMainView(msg tea.Msg) (Model, tea.Cmd) {
 	var (
@@ -19,9 +32,6 @@ func (m Model) updateMainView(msg tea.Msg) (Model, tea.Cmd) {
 	)
 
 	switch msg := msg.(type) {
-	case []*api.JobListStub:
-		m = NewModelWithJobs(m.size, msg)
-
 	case screens.Size:
 		m.size = msg
 
@@ -40,6 +50,13 @@ func (m Model) updateMainView(msg tea.Msg) (Model, tea.Cmd) {
 
 		case "r":
 			cmds = append(cmds, refreshJobsCmd)
+
+		case "i":
+			if len(m.jobs) == 0 {
+				break
+			}
+
+			cmds = append(cmds, inspectJobCmd(m.table.HighlightedRow().Data[tableKeyID].(string)))
 
 		case "f":
 			if len(m.jobs) == 0 {
@@ -81,6 +98,7 @@ func (m Model) genHelpBox() string {
 	helpLines := []string{
 		"Space/enter to select\n",
 		deleteHelp,
+		"(i)nspect job",
 		"(g)arbage collect (clears selections)",
 		"(r)efresh jobs (clears selections)",
 		"(f)ollow logs of random alloc",

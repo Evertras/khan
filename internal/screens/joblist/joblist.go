@@ -10,7 +10,6 @@ import (
 	"github.com/evertras/khan/internal/components/errview"
 	"github.com/evertras/khan/internal/components/logs"
 	"github.com/evertras/khan/internal/screens"
-	"github.com/evertras/khan/internal/styles"
 )
 
 type errMsg error
@@ -19,6 +18,8 @@ type Model struct {
 	size screens.Size
 
 	jobs []*api.JobListStub
+
+	inspect *api.Job
 
 	table table.Model
 
@@ -34,19 +35,14 @@ type Model struct {
 	logView logs.Model
 }
 
-var columns = []table.Column{
-	table.NewColumn(tableKeyID, "ID", 15),
-	table.NewColumn(tableKeyName, "Name", 20),
-	table.NewColumn(tableKeyStatus, "Status", 15),
-}
-
 func NewEmptyModel(size screens.Size) Model {
 	return Model{
 		showServices: true,
 		showBatch:    true,
-		table:        table.New(columns).SelectableRows(true),
+		table:        genListTable(),
 		errorMessage: errview.NewEmptyModel(),
 		size:         size,
+		lastUpdated:  time.Now(),
 	}
 }
 
@@ -57,22 +53,11 @@ const (
 )
 
 func NewModelWithJobs(size screens.Size, jobs []*api.JobListStub) Model {
-	m := Model{
-		jobs:         jobs,
-		showServices: true,
-		showBatch:    true,
-		lastUpdated:  time.Now(),
-		errorMessage: errview.NewEmptyModel(),
-		size:         size,
-	}
+	m := NewEmptyModel(size)
 
-	rows := m.generateRows()
+	m.jobs = jobs
 
-	m.table = table.New(columns).
-		WithRows(rows).
-		HeaderStyle(styles.Bold).
-		SelectableRows(true).
-		Focused(true)
+	m.table = genListTable().WithRows(m.generateRows())
 
 	return m
 }
@@ -83,6 +68,14 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case []*api.JobListStub:
+		m.jobs = msg
+		m.table = m.table.WithRows(m.generateRows())
+		m.lastUpdated = time.Now()
+
+	case *api.Job:
+		m.inspect = msg
+
 	case errMsg:
 		m.errorMessage = errview.NewModelWithMessage(msg.Error())
 	}
@@ -101,6 +94,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateLogView(msg)
 	}
 
+	if m.inspect != nil {
+		return m.updateInspect(msg)
+	}
+
 	return m.updateMainView(msg)
 }
 
@@ -115,6 +112,10 @@ func (m Model) View() string {
 
 	if logCancel != nil {
 		return m.viewLogs()
+	}
+
+	if m.inspect != nil {
+		return m.viewInspect()
 	}
 
 	return m.viewMain()
