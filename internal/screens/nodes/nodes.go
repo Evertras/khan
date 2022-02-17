@@ -1,15 +1,11 @@
 package nodes
 
 import (
-	"sort"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/evertras/bubble-table/table"
 	"github.com/hashicorp/nomad/api"
-
-	"github.com/evertras/khan/internal/repository"
-	"github.com/evertras/khan/internal/styles"
 )
 
 type errMsg error
@@ -17,93 +13,26 @@ type errMsg error
 type Model struct {
 	nodes []*api.NodeListStub
 
+	details *api.Node
+
 	table table.Model
 }
 
 func NewEmptyModel() Model {
-	return Model{}
+	return Model{
+		table: genListTable(),
+	}
 }
 
-const (
-	tableKeyID         = "id"
-	tableKeyName       = "name"
-	tableKeyDatacenter = "datacenter"
-	tableKeyStatus     = "status"
-	tableKeyAddress    = "address"
-	tableKeyVersion    = "version"
-	tableKeyDrain      = "drain"
-	tableKeyEligible   = "eligible"
-	tableKeyDrivers    = "drivers"
-)
-
 func NewModelWithNodes(nodes []*api.NodeListStub) Model {
-	headers := []table.Column{
-		table.NewColumn(tableKeyID, "ID", 10),
-		table.NewColumn(tableKeyDatacenter, "Datacenter", 12),
-		table.NewColumn(tableKeyName, "Name", 30),
-		table.NewColumn(tableKeyStatus, "Status", 8),
-		table.NewColumn(tableKeyEligible, "Eligibility", 14),
-		table.NewColumn(tableKeyDrain, "Draining", len("Draining")+1),
-		table.NewColumn(tableKeyAddress, "Address", 13),
-		table.NewColumn(tableKeyDrivers, "Drivers", 40),
-		table.NewColumn(tableKeyVersion, "Version", len("Version")+1),
-	}
-
-	rows := []table.Row{}
-
-	for _, node := range nodes {
-		data := table.RowData{
-			tableKeyID:         node.ID,
-			tableKeyDatacenter: node.Datacenter,
-			tableKeyName:       node.Name,
-			tableKeyStatus:     node.Status,
-			tableKeyAddress:    node.Address,
-			tableKeyVersion:    node.Version,
-			tableKeyEligible:   node.SchedulingEligibility,
-			tableKeyDrain:      node.Drain,
-		}
-
-		driverStrs := []string{}
-
-		for key := range node.Drivers {
-			driverStrs = append(driverStrs, key)
-		}
-
-		sort.Strings(driverStrs)
-
-		data[tableKeyDrivers] = strings.Join(driverStrs, ",")
-
-		row := table.NewRow(data)
-
-		switch node.Status {
-		case "ready":
-			row.Style = styles.Good
-
-		default:
-			row.Style = styles.Error
-		}
-
-		rows = append(rows, row)
-	}
-
 	return Model{
 		nodes: nodes,
-		table: table.New(headers).WithRows(rows).HeaderStyle(styles.Bold),
+		table: genListTable().WithRows(rowsFromNodes(nodes)),
 	}
 }
 
 func (m Model) Init() tea.Cmd {
-	return func() tea.Msg {
-		client := repository.GetNomadClient()
-
-		nodes, _, err := client.Nodes().List(&api.QueryOptions{})
-
-		if err != nil {
-			return errMsg(err)
-		}
-
-		return nodes
-	}
+	return refreshNodeListCmd
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -112,12 +41,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds []tea.Cmd
 	)
 
-	m.table, cmd = m.table.Update(msg)
-	cmds = append(cmds, cmd)
-
+	// Always update received data regardless of view
 	switch msg := msg.(type) {
 	case []*api.NodeListStub:
-		m = NewModelWithNodes(msg)
+		m.nodes = msg
+		m.table = m.table.WithRows(rowsFromNodes(msg))
+
+	case *api.Node:
+		m.details = msg
+	}
+
+	if m.details != nil {
+		m, cmd = m.updateDetails(msg)
+		cmds = append(cmds, cmd)
+	} else {
+		m, cmd = m.updateList(msg)
+		cmds = append(cmds, cmd)
 	}
 
 	return m, tea.Batch(cmds...)
@@ -126,7 +65,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
 	body := strings.Builder{}
 
-	body.WriteString(m.table.View())
+	if m.details != nil {
+		body.WriteString(m.viewDetails())
+	} else {
+		body.WriteString(m.viewList())
+	}
 
 	return body.String()
 }

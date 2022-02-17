@@ -24,6 +24,8 @@ var (
 	Title    = lipgloss.NewStyle().Foreground(ColorHighlight).Bold(true)
 	Subtitle = lipgloss.NewStyle().Foreground(ColorSubtle)
 	Header   = lipgloss.NewStyle().Foreground(ColorSpecial).Bold(true)
+
+	Key = lipgloss.NewStyle().Foreground(ColorSpecial).Bold(true)
 )
 
 func Checkbox(label string, checked bool) string {
