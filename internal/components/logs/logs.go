@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/khan/internal/screens"
 	"github.com/evertras/khan/internal/styles"
+	"github.com/muesli/reflow/wordwrap"
 )
 
 type Model struct {
@@ -45,7 +46,7 @@ func (m Model) WithJobInfo(jobID, allocID, taskGroup, task string) Model {
 
 func (m Model) Append(data string) Model {
 	m.contents += data
-	m.viewport.SetContent(m.contents)
+	m.viewport.SetContent(wordwrap.String(m.contents, m.viewport.Width))
 
 	return m
 }
@@ -77,7 +78,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
 			m.viewport.YPosition = headerHeight
 			m.viewport.HighPerformanceRendering = false
-			m.viewport.SetContent(m.contents)
+			m.viewport.SetContent(wordwrap.String(m.contents, msg.Width))
 			m.ready = true
 
 			// This is only necessary for high performance rendering, which in
@@ -88,6 +89,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		} else {
 			m.viewport.Width = msg.Width
 			m.viewport.Height = msg.Height - verticalMarginHeight
+			m.viewport.SetContent(wordwrap.String(m.contents, msg.Width))
 		}
 
 		if m.useHighPerformanceRenderer {
