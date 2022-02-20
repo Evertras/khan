@@ -22,7 +22,8 @@ func genListTable() table.Model {
 	return table.New(columns).
 		SelectableRows(true).
 		Focused(true).
-		HeaderStyle(styles.Bold)
+		HeaderStyle(styles.Bold).
+		WithPageSize(10)
 }
 
 func (m Model) updateMainView(msg tea.Msg) (Model, tea.Cmd) {

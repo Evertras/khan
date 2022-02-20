@@ -75,7 +75,7 @@ endif
 # Local dependencies and builds
 INTERNAL_GO_SOURCES := $(shell find internal/ -name '*.go')
 
-./bin/khan: ./cmd/khan/*.go $(INTERNAL_GO_SOURCES)
+./bin/khan: ./cmd/khan/*.go $(INTERNAL_GO_SOURCES) go.*
 	go build -o ./bin/khan ./cmd/khan/*.go
 
 ./.git/hooks/pre-commit: ./bin/pre-commit .pre-commit-config.yaml
