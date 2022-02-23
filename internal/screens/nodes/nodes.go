@@ -6,6 +6,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/evertras/bubble-table/table"
 	"github.com/hashicorp/nomad/api"
+
+	"github.com/evertras/khan/internal/components/datatree"
 )
 
 type errMsg error
@@ -14,6 +16,8 @@ type Model struct {
 	nodes []*api.NodeListStub
 
 	details *api.Node
+
+	detailsDataTree datatree.Model
 
 	table table.Model
 }
@@ -49,6 +53,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case *api.Node:
 		m.details = msg
+		m.detailsDataTree = datatree.New(msg)
 	}
 
 	if m.details != nil {

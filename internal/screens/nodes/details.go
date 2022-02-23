@@ -22,6 +22,10 @@ func (m Model) updateDetails(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) viewDetails() string {
+	return m.detailsDataTree.View()
+}
+
+func (m Model) viewDetailsOld() string {
 	d := m.details
 
 	body := strings.Builder{}

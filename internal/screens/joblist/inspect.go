@@ -22,6 +22,10 @@ func (m Model) updateInspect(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) viewInspect() string {
+	return m.inspectDataTree.View()
+}
+
+func (m Model) viewInspectOld() string {
 	i := m.inspect
 
 	body := strings.Builder{}

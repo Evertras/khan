@@ -7,6 +7,7 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/hashicorp/nomad/api"
 
+	"github.com/evertras/khan/internal/components/datatree"
 	"github.com/evertras/khan/internal/components/errview"
 	"github.com/evertras/khan/internal/components/logs"
 	"github.com/evertras/khan/internal/screens"
@@ -20,6 +21,8 @@ type Model struct {
 	jobs []*api.JobListStub
 
 	inspect *api.Job
+
+	inspectDataTree datatree.Model
 
 	table table.Model
 
@@ -75,6 +78,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case *api.Job:
 		m.inspect = msg
+		m.inspectDataTree = datatree.New(m.inspect)
 
 	case errMsg:
 		m.errorMessage = errview.NewModelWithMessage(msg.Error())
