@@ -111,18 +111,6 @@ func (m Model) renderDataNodeStruct(data reflect.Value, indentLevel int) string 
 		result.WriteString(m.renderDataNode(field, indentLevel+1))
 		result.WriteString("\n")
 		continue
-
-		switch field.Type().Kind() {
-		case reflect.Struct:
-			result.WriteString("\n")
-			result.WriteString(m.renderDataNodeStruct(field, indentLevel+1))
-
-		case reflect.Slice, reflect.Array:
-			result.WriteString(m.renderDataNodeArray(field, indentLevel+1))
-
-		default:
-			result.WriteString(fmt.Sprintf(" %v\n", field))
-		}
 	}
 
 	return result.String()
