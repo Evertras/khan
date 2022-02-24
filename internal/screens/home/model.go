@@ -35,7 +35,9 @@ func NewModel() Model {
 		Name: "Hello",
 		Nums: []int{3, 4, 1},
 		MyMap: map[string]string{
-			"hi": "ok",
+			"bb":       "b",
+			"hi":       "ok",
+			"aardvark": "highest",
 		},
 	}
 
