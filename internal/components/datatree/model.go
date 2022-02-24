@@ -40,6 +40,37 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m Model) renderDataNodeArray(data reflect.Value, indentLevel int) string {
+	result := strings.Builder{}
+
+	elemType := data.Type().Elem()
+
+	for elemType.Kind() == reflect.Ptr {
+		elemType = elemType.Elem()
+	}
+
+	switch elemType.Kind() {
+
+	case reflect.Struct:
+		result.WriteString("\n")
+		for i := 0; i < data.Len(); i++ {
+			style := lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				MarginLeft((indentLevel + 1) * len(m.indentStr)).
+				PaddingLeft(1).
+				PaddingRight(1)
+			entryStr := m.renderDataNode(data.Index(i), 0)
+			result.WriteString(style.Render(strings.TrimSuffix(entryStr, "\n")))
+			result.WriteString("\n")
+		}
+
+	default:
+		result.WriteString(fmt.Sprintf(" %v\n", data))
+	}
+
+	return result.String()
+}
+
 func (m Model) renderDataNodeStruct(data reflect.Value, indentLevel int) string {
 	result := strings.Builder{}
 	indent := strings.Repeat(m.indentStr, indentLevel)
@@ -75,43 +106,10 @@ func (m Model) renderDataNodeStruct(data reflect.Value, indentLevel int) string 
 		switch field.Type().Kind() {
 		case reflect.Struct:
 			result.WriteString("\n")
-			result.WriteString(m.renderDataNode(field, indentLevel+1))
-
-		case reflect.Ptr:
-			result.WriteString(" ")
-
-			if field.IsNil() {
-				result.WriteString("nil")
-			} else {
-				result.WriteString(fmt.Sprintf("%v", field))
-			}
-			result.WriteString("\n")
+			result.WriteString(m.renderDataNodeStruct(field, indentLevel+1))
 
 		case reflect.Slice, reflect.Array:
-			elemType := field.Type().Elem()
-
-			for elemType.Kind() == reflect.Ptr {
-				elemType = elemType.Elem()
-			}
-
-			switch elemType.Kind() {
-
-			case reflect.Struct:
-				result.WriteString("\n")
-				for i := 0; i < field.Len(); i++ {
-					style := lipgloss.NewStyle().
-						Border(lipgloss.RoundedBorder()).
-						MarginLeft((indentLevel + 1) * len(m.indentStr)).
-						PaddingLeft(1).
-						PaddingRight(1)
-					entryStr := m.renderDataNode(field.Index(i), 0)
-					result.WriteString(style.Render(strings.TrimSuffix(entryStr, "\n")))
-					result.WriteString("\n")
-				}
-
-			default:
-				result.WriteString(fmt.Sprintf(" %v\n", field))
-			}
+			result.WriteString(m.renderDataNodeArray(field, indentLevel+1))
 
 		default:
 			result.WriteString(fmt.Sprintf(" %v\n", field))
