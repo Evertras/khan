@@ -10,6 +10,13 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var (
+	styleFieldKey = lipgloss.NewStyle().Foreground(lipgloss.AdaptiveColor{
+		Light: "#224",
+		Dark:  "#b8e",
+	}).Bold(true)
+)
+
 type Model struct {
 	data      interface{}
 	indentStr string
@@ -75,7 +82,7 @@ func (m Model) renderDataNode(data reflect.Value, indentLevel int) string {
 		}
 
 		result.WriteString(indent)
-		result.WriteString(fieldName + ":")
+		result.WriteString(styleFieldKey.Render(fieldName + ":"))
 
 		switch field.Type().Kind() {
 		case reflect.Struct:
