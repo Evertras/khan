@@ -5,10 +5,12 @@ import (
 
 	"github.com/hashicorp/nomad/api"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/evertras/khan/internal/screens"
 )
 
 func TestEmptyViewDoesntPanic(t *testing.T) {
-	m := NewEmptyModel()
+	m := NewEmptyModel(screens.Size{})
 
 	m.View()
 }

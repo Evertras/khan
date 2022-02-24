@@ -21,6 +21,8 @@ type Model struct {
 	height int
 
 	connectionInfo string
+
+	size screens.Size
 }
 
 func NewModel() Model {
@@ -34,12 +36,10 @@ type errMsg struct {
 	err error
 }
 
-func screenSizeFromWindowSizeCmd(width, height int) func() tea.Msg {
-	return func() tea.Msg {
-		return screens.Size{
-			Width:  width,
-			Height: height - 3,
-		}
+func screenSizeFromWindowSize(msg tea.WindowSizeMsg) screens.Size {
+	return screens.Size{
+		Width:  msg.Width,
+		Height: msg.Height - 3,
 	}
 }
 
@@ -67,15 +67,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, m.screen.Init())
 
 		case "N":
-			m.screen = nodes.NewEmptyModel()
+			m.screen = nodes.NewEmptyModel(m.size)
 			m.activeTab = activeNodes
 			cmds = append(cmds, m.screen.Init())
 
 		case "J":
-			m.screen = joblist.NewEmptyModel(screens.Size{
-				Width:  m.width,
-				Height: m.height - 3,
-			})
+			m.screen = joblist.NewEmptyModel(m.size)
 			m.activeTab = activeJobList
 			cmds = append(cmds, m.screen.Init())
 		}
@@ -83,11 +80,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
+		m.size = screenSizeFromWindowSize(msg)
 
-		m.screen, cmd = m.screen.Update(screens.Size{
-			Width:  msg.Width,
-			Height: msg.Height - 3,
-		})
+		m.screen, cmd = m.screen.Update(m.size)
 		cmds = append(cmds, cmd)
 	}
 
