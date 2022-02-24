@@ -24,9 +24,10 @@ type Model struct {
 	table table.Model
 }
 
-func NewEmptyModel() Model {
+func NewEmptyModel(size screens.Size) Model {
 	return Model{
 		table: genListTable(),
+		size:  size,
 	}
 }
 

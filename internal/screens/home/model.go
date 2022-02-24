@@ -4,50 +4,13 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/hashicorp/nomad/api"
-
-	"github.com/evertras/khan/internal/components/datatree"
 )
 
-type SampleStruct struct {
-	Inner struct {
-		ID         string
-		Another    int
-		unexported float64
-	}
-
-	Name string
-	shh  int
-
-	Job api.Job
-
-	Nums []int
-
-	MyMap map[string]string
-}
-
 type Model struct {
-	tree datatree.Model
 }
 
 func NewModel() Model {
-	sample := SampleStruct{
-		Name: "Hello",
-		Nums: []int{3, 4, 1},
-		MyMap: map[string]string{
-			"bb":       "b",
-			"hi":       "ok",
-			"aardvark": "highest",
-		},
-	}
-
-	sample.Inner.Another = 3
-
-	sample.Inner.ID = "some-id"
-
-	return Model{
-		tree: datatree.New(&sample),
-	}
+	return Model{}
 }
 
 func (m Model) Init() tea.Cmd {
@@ -55,13 +18,7 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var (
-		cmd tea.Cmd
-	)
-
-	m.tree, cmd = m.tree.Update(msg)
-
-	return m, cmd
+	return m, nil
 }
 
 func (m Model) View() string {
@@ -70,7 +27,6 @@ func (m Model) View() string {
 	body.WriteString(" Press 'q' or ctrl+C at any time to quit.")
 
 	body.WriteString("\n")
-	body.WriteString(m.tree.View())
 
 	return body.String()
 }
