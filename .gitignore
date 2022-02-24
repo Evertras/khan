@@ -26,3 +26,5 @@ vendor/
 nomad/dev-server.hcl
 nomad/data
 
+# Goreleaser builds
+dist/
