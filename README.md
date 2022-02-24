@@ -14,6 +14,11 @@ command line, similar to a tool like [k9s](https://github.com/derailed/k9s).
 
 Enter Khan!
 
+## Installation
+
+Head to the [releases page](https://github.com/Evertras/khan/releases) and
+download the binary directly for your OS.
+
 ## Configuration
 
 Khan uses the [default Nomad configuration variables](https://www.nomadproject.io/docs/commands#connection-environment-variables).
