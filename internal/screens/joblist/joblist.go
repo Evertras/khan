@@ -83,9 +83,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case *api.Job:
 		m.inspect = msg
 		m.inspectDataTree = datatree.New(m.inspect)
+		m.inspectDataTree, _ = m.inspectDataTree.Update(m.size)
 
 	case errMsg:
 		m.errorMessage = errview.NewModelWithMessage(msg.Error())
+
+	case screens.Size:
+		m.size = msg
 	}
 
 	m.inspectDataTree, cmd = m.inspectDataTree.Update(msg)
