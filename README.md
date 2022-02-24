@@ -8,7 +8,8 @@ An interactive CLI management tool for [Hashicorp's Nomad](https://www.nomadproj
 
 Nomad has a great CLI tool with a lot of features, but copy/pasting IDs around
 and wanting to see steady updates among multiple objects can be tricky.  There's
-also Nomad's full web UI, but this has overhead in setup.
+also Nomad's full web UI, but this has overhead in setup and can be a pain to
+work with through SSH tunnels.
 
 There is room for a middle ground for quick debugging/troubleshooting on the
 command line, similar to a tool like [k9s](https://github.com/derailed/k9s).
