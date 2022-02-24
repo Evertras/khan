@@ -2,6 +2,8 @@
 
 An interactive CLI management tool for [Hashicorp's Nomad](https://www.nomadproject.io/)
 
+<img width="983" alt="image" src="https://user-images.githubusercontent.com/5923958/155530556-35ccee7a-67eb-4788-845b-6d8f2f871a7b.png">
+
 ## Why
 
 Nomad has a great CLI tool with a lot of features, but copy/pasting IDs around
