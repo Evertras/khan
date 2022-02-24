@@ -10,6 +10,10 @@ import (
 )
 
 func (m Model) updateDetails(msg tea.Msg) (Model, tea.Cmd) {
+	var (
+		cmd tea.Cmd
+	)
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -18,7 +22,7 @@ func (m Model) updateDetails(msg tea.Msg) (Model, tea.Cmd) {
 		}
 	}
 
-	return m, nil
+	return m, cmd
 }
 
 func (m Model) viewDetails() string {

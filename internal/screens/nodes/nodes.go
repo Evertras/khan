@@ -8,12 +8,14 @@ import (
 	"github.com/hashicorp/nomad/api"
 
 	"github.com/evertras/khan/internal/components/datatree"
+	"github.com/evertras/khan/internal/screens"
 )
 
 type errMsg error
 
 type Model struct {
 	nodes []*api.NodeListStub
+	size  screens.Size
 
 	details *api.Node
 
@@ -54,6 +56,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case *api.Node:
 		m.details = msg
 		m.detailsDataTree = datatree.New(msg)
+		m.detailsDataTree, _ = m.detailsDataTree.Update(m.size)
+
+	case screens.Size:
+		m.size = msg
 	}
 
 	if m.details != nil {
@@ -63,6 +69,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m, cmd = m.updateList(msg)
 		cmds = append(cmds, cmd)
 	}
+
+	m.detailsDataTree, cmd = m.detailsDataTree.Update(msg)
+	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
 }

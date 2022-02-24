@@ -54,8 +54,14 @@ func (m Model) Init() tea.Cmd {
 	return nil
 }
 
-func (m Model) Update(tea.Msg) (tea.Model, tea.Cmd) {
-	return m, nil
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var (
+		cmd tea.Cmd
+	)
+
+	m.tree, cmd = m.tree.Update(msg)
+
+	return m, cmd
 }
 
 func (m Model) View() string {

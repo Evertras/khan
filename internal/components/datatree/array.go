@@ -27,7 +27,7 @@ func (m Model) renderDataNodeArray(data reflect.Value, indentLevel int) string {
 				PaddingLeft(1).
 				PaddingRight(1)
 			entryStr := m.renderDataNode(data.Index(i), 0)
-			result.WriteString(style.Render(trimNewline(entryStr)))
+			result.WriteString(style.Render(strings.TrimSpace(entryStr)))
 			result.WriteString("\n")
 		}
 

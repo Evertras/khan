@@ -3,7 +3,16 @@ package datatree
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
+
+func (m *Model) updateContents() {
+	reflected := reflect.ValueOf(m.data)
+
+	m.contents = strings.TrimSpace(m.renderDataNode(reflected, 0))
+
+	m.viewport.SetContent(m.contents)
+}
 
 func (m Model) renderDataNode(data reflect.Value, indentLevel int) string {
 	for data.Kind() == reflect.Ptr {
