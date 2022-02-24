@@ -70,6 +70,10 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var (
+		cmd  tea.Cmd
+		cmds []tea.Cmd
+	)
 	switch msg := msg.(type) {
 	case []*api.JobListStub:
 		m.jobs = msg
@@ -84,25 +88,29 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.errorMessage = errview.NewModelWithMessage(msg.Error())
 	}
 
-	if m.errorMessage.Active() {
-		var cmd tea.Cmd
+	m.inspectDataTree, cmd = m.inspectDataTree.Update(msg)
+	cmds = append(cmds, cmd)
+
+	switch {
+	case m.errorMessage.Active():
 		m.errorMessage, cmd = m.errorMessage.Update(msg)
-		return m, cmd
+
+	case len(m.confirmStopIDs) != 0:
+		m, cmd = m.updateConfirmStop(msg)
+
+	case logCancel != nil:
+		m, cmd = m.updateLogView(msg)
+
+	case m.inspect != nil:
+		m, cmd = m.updateInspect(msg)
+
+	default:
+		m, cmd = m.updateMainView(msg)
 	}
 
-	if len(m.confirmStopIDs) != 0 {
-		return m.updateConfirmStop(msg)
-	}
+	cmds = append(cmds, cmd)
 
-	if logCancel != nil {
-		return m.updateLogView(msg)
-	}
-
-	if m.inspect != nil {
-		return m.updateInspect(msg)
-	}
-
-	return m.updateMainView(msg)
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) View() string {
