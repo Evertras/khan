@@ -22,6 +22,8 @@ type SampleStruct struct {
 	Job api.Job
 
 	Nums []int
+
+	MyMap map[string]string
 }
 
 type Model struct {
@@ -32,6 +34,9 @@ func NewModel() Model {
 	sample := SampleStruct{
 		Name: "Hello",
 		Nums: []int{3, 4, 1},
+		MyMap: map[string]string{
+			"hi": "ok",
+		},
 	}
 
 	sample.Inner.Another = 3

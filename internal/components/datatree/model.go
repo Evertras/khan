@@ -40,19 +40,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) renderDataNode(data reflect.Value, indentLevel int) string {
-	for data.Kind() == reflect.Ptr {
-		if data.IsNil() {
-			return "<nil>"
-		}
-
-		data = data.Elem()
-	}
-
-	if data.Kind() != reflect.Struct {
-		return fmt.Sprintf("%v", data)
-	}
-
+func (m Model) renderDataNodeStruct(data reflect.Value, indentLevel int) string {
 	result := strings.Builder{}
 	indent := strings.Repeat(m.indentStr, indentLevel)
 
@@ -131,6 +119,24 @@ func (m Model) renderDataNode(data reflect.Value, indentLevel int) string {
 	}
 
 	return result.String()
+}
+
+func (m Model) renderDataNode(data reflect.Value, indentLevel int) string {
+	for data.Kind() == reflect.Ptr {
+		if data.IsNil() {
+			return "<nil>"
+		}
+
+		data = data.Elem()
+	}
+
+	switch data.Kind() {
+	case reflect.Struct:
+		return m.renderDataNodeStruct(data, indentLevel)
+
+	default:
+		return fmt.Sprintf("%v", data)
+	}
 }
 
 func (m Model) View() string {
