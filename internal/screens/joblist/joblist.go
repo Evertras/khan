@@ -42,7 +42,7 @@ func NewEmptyModel(size screens.Size) Model {
 	return Model{
 		showServices: true,
 		showBatch:    true,
-		table:        genListTable().SortByDesc(tableKeySubmitTime),
+		table:        genListTable().SortByDesc(tableKeySubmitDate),
 		errorMessage: errview.NewEmptyModel(),
 		size:         size,
 		lastUpdated:  time.Now(),
@@ -53,7 +53,7 @@ const (
 	tableKeyID         = "id"
 	tableKeyName       = "name"
 	tableKeyStatus     = "status"
-	tableKeySubmitTime = "submitDate"
+	tableKeySubmitDate = "submitDate"
 )
 
 func NewModelWithJobs(size screens.Size, jobs []*api.JobListStub) Model {
@@ -61,7 +61,7 @@ func NewModelWithJobs(size screens.Size, jobs []*api.JobListStub) Model {
 
 	m.jobs = jobs
 
-	m.table = genListTable().WithRows(m.generateRows()).SortByDesc(tableKeySubmitTime)
+	m.table = genListTable().WithRows(m.generateRows()).SortByDesc(tableKeySubmitDate)
 
 	return m
 }

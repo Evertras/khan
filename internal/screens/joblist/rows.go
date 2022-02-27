@@ -28,7 +28,7 @@ JOBLOOP:
 			tableKeyID:         job.ID,
 			tableKeyName:       job.Name,
 			tableKeyStatus:     job.Status,
-			tableKeySubmitTime: time.Unix(0, job.SubmitTime).Format("2006-01-02 15:04:05"),
+			tableKeySubmitDate: time.Unix(0, job.SubmitTime).Format("2006-01-02 15:04:05"),
 		})
 
 		switch job.Status {
