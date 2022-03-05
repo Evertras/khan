@@ -35,6 +35,9 @@ JOBLOOP:
 		case "running":
 			row.Style = styles.Good
 
+		case "pending":
+			row.Style = styles.Warning
+
 		default:
 			row.Style = styles.Error
 		}

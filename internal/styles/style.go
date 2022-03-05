@@ -18,6 +18,7 @@ var (
 
 	// Pre-defined styles
 	Good  = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
+	Warning  = lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0"))
 	Error = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
 	Bold  = lipgloss.NewStyle().Bold(true)
 
