@@ -4,7 +4,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/hashicorp/nomad/api"
 
-	"github.com/evertras/khan/internal/components/errview"
 	"github.com/evertras/khan/internal/screens"
 	"github.com/evertras/khan/internal/screens/jobs/inspect"
 	"github.com/evertras/khan/internal/screens/jobs/list"
@@ -17,17 +16,12 @@ const (
 	stateList state = iota
 	stateLogs
 	stateInspect
-	stateError
 )
-
-type errMsg error
 
 type Model struct {
 	size screens.Size
 
 	activeState state
-
-	errorMessage errview.Model
 
 	list    tea.Model
 	inspect tea.Model
@@ -36,9 +30,8 @@ type Model struct {
 
 func New(size screens.Size) Model {
 	return Model{
-		errorMessage: errview.NewEmptyModel(),
-		size:         size,
-		list:         list.New(size),
+		size: size,
+		list: list.New(size),
 	}
 }
 
@@ -70,10 +63,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.inspect = inspect.New(msg)
 		cmds = append(cmds, m.refreshSizeCmd())
 
-	case errMsg:
-		m.activeState = stateError
-		m.errorMessage = errview.NewModelWithMessage(msg.Error())
-
 	case screens.Size:
 		m.size = msg
 
@@ -85,9 +74,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch m.activeState {
-	case stateError:
-		m.errorMessage, cmd = m.errorMessage.Update(msg)
-
 	case stateLogs:
 		m.logs, cmd = m.logs.Update(msg)
 
@@ -105,9 +91,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	switch m.activeState {
-	case stateError:
-		return m.errorMessage.View()
-
 	case stateLogs:
 		return m.logs.View()
 
