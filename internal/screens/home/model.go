@@ -9,7 +9,7 @@ import (
 type Model struct {
 }
 
-func NewModel() Model {
+func New() Model {
 	return Model{}
 }
 

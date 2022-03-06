@@ -33,7 +33,7 @@ type Model struct {
 	logView      logs.Model
 }
 
-func NewEmptyModel(size screens.Size) Model {
+func New(size screens.Size) Model {
 	return Model{
 		errorMessage: errview.NewEmptyModel(),
 		size:         size,
