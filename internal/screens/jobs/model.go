@@ -27,10 +27,11 @@ type Model struct {
 
 	activeState state
 
-	list         tea.Model
-	inspect      tea.Model
 	errorMessage errview.Model
-	logs         tea.Model
+
+	list    tea.Model
+	inspect tea.Model
+	logs    tea.Model
 }
 
 func New(size screens.Size) Model {
