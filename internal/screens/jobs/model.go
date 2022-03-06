@@ -5,10 +5,10 @@ import (
 	"github.com/hashicorp/nomad/api"
 
 	"github.com/evertras/khan/internal/components/errview"
-	"github.com/evertras/khan/internal/components/logs"
 	"github.com/evertras/khan/internal/screens"
 	"github.com/evertras/khan/internal/screens/jobs/inspect"
 	"github.com/evertras/khan/internal/screens/jobs/list"
+	"github.com/evertras/khan/internal/screens/jobs/logs"
 )
 
 type state int
@@ -30,7 +30,7 @@ type Model struct {
 	list         tea.Model
 	inspect      tea.Model
 	errorMessage errview.Model
-	logView      logs.Model
+	logs         tea.Model
 }
 
 func New(size screens.Size) Model {
@@ -42,8 +42,6 @@ func New(size screens.Size) Model {
 }
 
 func (m Model) Init() tea.Cmd {
-	cancelExistingLogStream()
-
 	var (
 		cmds []tea.Cmd
 	)
@@ -64,7 +62,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "esc":
 			m.activeState = stateList
-			cancelExistingLogStream()
 		}
 
 	case *api.Job:
@@ -81,7 +78,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case list.ShowLogs:
 		m.activeState = stateLogs
-		cmds = append(cmds, showLogsForJobCmd(msg.JobID))
+		m.logs = logs.New(msg.JobID)
+		cmds = append(cmds, m.logs.Init())
 		cmds = append(cmds, m.refreshSizeCmd())
 	}
 
@@ -90,7 +88,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.errorMessage, cmd = m.errorMessage.Update(msg)
 
 	case stateLogs:
-		m, cmd = m.updateLogView(msg)
+		m.logs, cmd = m.logs.Update(msg)
 
 	case stateInspect:
 		m.inspect, cmd = m.inspect.Update(msg)
@@ -110,7 +108,7 @@ func (m Model) View() string {
 		return m.errorMessage.View()
 
 	case stateLogs:
-		return m.viewLogs()
+		return m.logs.View()
 
 	case stateInspect:
 		return m.inspect.View()
