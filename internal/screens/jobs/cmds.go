@@ -91,3 +91,9 @@ func showLogsForJobCmd(jobID string) func() tea.Msg {
 		}
 	}
 }
+
+func (m *Model) refreshSizeCmd() tea.Cmd {
+	return func() tea.Msg {
+		return m.size
+	}
+}

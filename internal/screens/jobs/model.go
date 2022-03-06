@@ -4,10 +4,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/hashicorp/nomad/api"
 
-	"github.com/evertras/khan/internal/components/datatree"
 	"github.com/evertras/khan/internal/components/errview"
 	"github.com/evertras/khan/internal/components/logs"
 	"github.com/evertras/khan/internal/screens"
+	"github.com/evertras/khan/internal/screens/jobs/inspect"
 	"github.com/evertras/khan/internal/screens/jobs/list"
 )
 
@@ -25,16 +25,12 @@ type errMsg error
 type Model struct {
 	size screens.Size
 
-	inspect         *api.Job
-	inspectDataTree datatree.Model
-
-	errorMessage errview.Model
-
-	logView logs.Model
-
-	list tea.Model
-
 	activeState state
+
+	list         tea.Model
+	inspect      tea.Model
+	errorMessage errview.Model
+	logView      logs.Model
 }
 
 func NewEmptyModel(size screens.Size) Model {
@@ -73,9 +69,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case *api.Job:
 		m.activeState = stateInspect
-		m.inspect = msg
-		m.inspectDataTree = datatree.New(m.inspect)
-		m.inspectDataTree, _ = m.inspectDataTree.Update(m.size)
+		m.inspect = inspect.New(msg)
+		cmds = append(cmds, m.refreshSizeCmd())
 
 	case errMsg:
 		m.activeState = stateError
@@ -86,12 +81,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case list.ShowLogs:
 		m.activeState = stateLogs
-		m.logView, _ = m.logView.Update(m.size)
 		cmds = append(cmds, showLogsForJobCmd(msg.JobID))
+		cmds = append(cmds, m.refreshSizeCmd())
 	}
-
-	m.inspectDataTree, cmd = m.inspectDataTree.Update(msg)
-	cmds = append(cmds, cmd)
 
 	switch m.activeState {
 	case stateError:
@@ -101,7 +93,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m, cmd = m.updateLogView(msg)
 
 	case stateInspect:
-		m, cmd = m.updateInspect(msg)
+		m.inspect, cmd = m.inspect.Update(msg)
 
 	default:
 		m.list, cmd = m.list.Update(msg)
@@ -121,7 +113,7 @@ func (m Model) View() string {
 		return m.viewLogs()
 
 	case stateInspect:
-		return m.viewInspect()
+		return m.inspect.View()
 
 	case stateList:
 		return m.list.View()
