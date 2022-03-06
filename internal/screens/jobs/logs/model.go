@@ -25,6 +25,10 @@ func New(jobID string) Model {
 }
 
 func (m Model) Init() tea.Cmd {
+	if m.jobID == "" {
+		return nil
+	}
+
 	return showLogsForJobCmd(m.jobID)
 }
 
