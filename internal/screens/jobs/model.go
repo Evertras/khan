@@ -10,28 +10,22 @@ import (
 	"github.com/evertras/khan/internal/screens/jobs/logs"
 )
 
-type state int
-
-const (
-	stateList state = iota
-	stateLogs
-	stateInspect
-)
-
 type Model struct {
 	size screens.Size
 
 	activeState state
 
-	list    tea.Model
-	inspect tea.Model
-	logs    tea.Model
+	subviews map[state]tea.Model
 }
 
 func New(size screens.Size) Model {
 	return Model{
 		size: size,
-		list: list.New(size),
+		subviews: map[state]tea.Model{
+			stateList:    list.New(size),
+			stateLogs:    logs.New(""),
+			stateInspect: inspect.New(nil),
+		},
 	}
 }
 
@@ -40,7 +34,9 @@ func (m Model) Init() tea.Cmd {
 		cmds []tea.Cmd
 	)
 
-	cmds = append(cmds, m.list.Init())
+	for _, subview := range m.subviews {
+		cmds = append(cmds, subview.Init())
+	}
 
 	return tea.Batch(cmds...)
 }
@@ -58,31 +54,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.activeState = stateList
 		}
 
-	case *api.Job:
-		m.activeState = stateInspect
-		m.inspect = inspect.New(msg)
-		cmds = append(cmds, m.refreshSizeCmd())
-
 	case screens.Size:
 		m.size = msg
 
+	case *api.Job:
+		cmds = append(cmds, m.toStateInspect(msg))
+
 	case list.ShowLogs:
-		m.activeState = stateLogs
-		m.logs = logs.New(msg.JobID)
-		cmds = append(cmds, m.logs.Init())
-		cmds = append(cmds, m.refreshSizeCmd())
+		cmds = append(cmds, m.toStateLogs(msg.JobID))
 	}
 
-	switch m.activeState {
-	case stateLogs:
-		m.logs, cmd = m.logs.Update(msg)
-
-	case stateInspect:
-		m.inspect, cmd = m.inspect.Update(msg)
-
-	default:
-		m.list, cmd = m.list.Update(msg)
-	}
+	m.subviews[m.activeState], cmd = m.subviews[m.activeState].Update(msg)
 
 	cmds = append(cmds, cmd)
 
@@ -90,17 +72,5 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	switch m.activeState {
-	case stateLogs:
-		return m.logs.View()
-
-	case stateInspect:
-		return m.inspect.View()
-
-	case stateList:
-		return m.list.View()
-
-	default:
-		return m.list.View()
-	}
+	return m.subviews[m.activeState].View()
 }
