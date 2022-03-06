@@ -10,8 +10,8 @@ job "ticker" {
       config {
         command = "bash"
         args = [
-          "-c",
-          "while true; do sleep 1s; date; done",
+          "-ec",
+          "while true; do sleep 1; date; done",
         ]
       }
     }

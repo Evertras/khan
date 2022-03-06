@@ -17,10 +17,10 @@ var (
 	ColorSpecial   = lipgloss.AdaptiveColor{Light: "#43BF6D", Dark: "#73F59F"}
 
 	// Pre-defined styles
-	Good  = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
-	Warning  = lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0"))
-	Error = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
-	Bold  = lipgloss.NewStyle().Bold(true)
+	Good    = lipgloss.NewStyle().Foreground(lipgloss.Color("10"))
+	Warning = lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0"))
+	Error   = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))
+	Bold    = lipgloss.NewStyle().Bold(true)
 
 	Title    = lipgloss.NewStyle().Foreground(ColorHighlight).Bold(true)
 	Subtitle = lipgloss.NewStyle().Foreground(ColorSubtle)

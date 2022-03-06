@@ -25,9 +25,9 @@ type Model struct {
 	size screens.Size
 }
 
-func NewModel() Model {
+func New() Model {
 	return Model{
-		screen:         home.NewModel(),
+		screen:         home.New(),
 		connectionInfo: api.DefaultConfig().Address,
 	}
 }
@@ -62,17 +62,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, tea.Quit)
 
 		case "H":
-			m.screen = home.NewModel()
+			m.screen = home.New()
 			m.activeTab = activeHome
 			cmds = append(cmds, m.screen.Init())
 
 		case "N":
-			m.screen = nodes.NewEmptyModel(m.size)
+			m.screen = nodes.New(m.size)
 			m.activeTab = activeNodes
 			cmds = append(cmds, m.screen.Init())
 
 		case "J":
-			m.screen = jobs.NewEmptyModel(m.size)
+			m.screen = jobs.New(m.size)
 			m.activeTab = activeJobList
 			cmds = append(cmds, m.screen.Init())
 		}

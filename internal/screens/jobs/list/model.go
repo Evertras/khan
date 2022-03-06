@@ -1,41 +1,75 @@
-package jobs
+package list
 
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-
 	"github.com/evertras/bubble-table/table"
+	"github.com/evertras/khan/internal/components/errview"
 	"github.com/evertras/khan/internal/screens"
 	"github.com/evertras/khan/internal/styles"
+	"github.com/hashicorp/nomad/api"
 )
 
-func genListTable() table.Model {
-	columns := []table.Column{
-		table.NewColumn(tableKeyID, "ID", 15),
-		table.NewColumn(tableKeyName, "Name", 20),
-		table.NewColumn(tableKeyStatus, "Status", 15),
-		table.NewColumn(tableKeySubmitDate, "Submit Date", 30),
-	}
+const (
+	tableKeyID         = "id"
+	tableKeyName       = "name"
+	tableKeyStatus     = "status"
+	tableKeySubmitDate = "submitDate"
+)
 
-	return table.New(columns).
-		SelectableRows(true).
-		Focused(true).
-		HeaderStyle(styles.Bold).
-		WithPageSize(10)
+var (
+	styleHelp   = lipgloss.NewStyle().Width(70).Padding(1).Foreground(styles.ColorSpecial)
+	styleSubtle = lipgloss.NewStyle().Foreground(styles.ColorSubtle)
+
+	styleConfirmWarning = styles.Error.Copy().Padding(2)
+)
+
+type Model struct {
+	size           screens.Size
+	jobs           []*api.JobListStub
+	table          table.Model
+	lastUpdated    time.Time
+	errorMessage   errview.Model
+	showBatch      bool
+	showServices   bool
+	confirmStopIDs []string
 }
 
-func (m Model) updateMainView(msg tea.Msg) (Model, tea.Cmd) {
+func New(size screens.Size) Model {
+	return Model{
+		size:         size,
+		table:        genListTable(),
+		showBatch:    true,
+		showServices: true,
+	}
+}
+
+func (m Model) Init() tea.Cmd {
+	return refreshJobsCmd
+}
+
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
 		cmd  tea.Cmd
 		cmds []tea.Cmd
 	)
 
+	if len(m.confirmStopIDs) != 0 {
+		return m.updateConfirmStop(msg)
+	}
+
 	switch msg := msg.(type) {
 	case screens.Size:
 		m.size = msg
+
+	case []*api.JobListStub:
+		m.jobs = msg
+		m.table = m.table.WithRows(m.generateRows())
+		m.lastUpdated = time.Now()
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -66,9 +100,9 @@ func (m Model) updateMainView(msg tea.Msg) (Model, tea.Cmd) {
 			}
 
 			jobID := m.table.HighlightedRow().Data[tableKeyID].(string)
-			cmds = append(cmds, showLogsForJobCmd(jobID))
-
-			m.logView, _ = m.logView.Update(m.size)
+			cmds = append(cmds, func() tea.Msg {
+				return ShowLogs{jobID}
+			})
 
 		case "s":
 			ids := []string{}
@@ -91,25 +125,11 @@ func (m Model) updateMainView(msg tea.Msg) (Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func (m Model) genHelpBox() string {
-	deleteHelp := "(s)top selected"
-	if len(m.table.SelectedRows()) == 0 {
-		deleteHelp = styleSubtle.Render(deleteHelp)
+func (m Model) View() string {
+	if len(m.confirmStopIDs) != 0 {
+		return m.viewConfirmStop()
 	}
 
-	helpLines := []string{
-		"Space/enter to select\n",
-		deleteHelp,
-		"(i)nspect job",
-		"(g)arbage collect (clears selections)",
-		"(r)efresh jobs (clears selections)",
-		"(f)ollow logs of random alloc",
-	}
-
-	return styleHelp.Render(strings.Join(helpLines, "\n"))
-}
-
-func (m Model) viewMain() string {
 	tableView := m.table.View()
 
 	body := strings.Builder{}
@@ -128,4 +148,22 @@ func (m Model) viewMain() string {
 	))
 
 	return body.String()
+}
+
+func (m Model) genHelpBox() string {
+	deleteHelp := "(s)top selected"
+	if len(m.table.SelectedRows()) == 0 {
+		deleteHelp = styleSubtle.Render(deleteHelp)
+	}
+
+	helpLines := []string{
+		"Space/enter to select\n",
+		deleteHelp,
+		"(i)nspect job",
+		"(g)arbage collect (clears selections)",
+		"(r)efresh jobs (clears selections)",
+		"(f)ollow logs of random alloc",
+	}
+
+	return styleHelp.Render(strings.Join(helpLines, "\n"))
 }

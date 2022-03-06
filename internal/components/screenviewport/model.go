@@ -1,4 +1,4 @@
-package logs
+package screenviewport
 
 import (
 	"fmt"
@@ -7,47 +7,44 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/reflow/wordwrap"
+
 	"github.com/evertras/khan/internal/screens"
 	"github.com/evertras/khan/internal/styles"
-	"github.com/muesli/reflow/wordwrap"
 )
 
 type Model struct {
 	viewport viewport.Model
 	ready    bool
 
-	jobID     string
-	allocID   string
-	taskGroup string
-	task      string
-
+	header   string
 	contents string
 
 	useHighPerformanceRenderer bool
 }
 
-func NewJobLogs(jobID string) Model {
+func New(jobID string) Model {
 	m := Model{
-		jobID:    jobID,
-		contents: "Loading...",
-
 		useHighPerformanceRenderer: true,
 	}
 
 	return m
 }
 
-func (m Model) WithJobInfo(jobID, allocID, taskGroup, task string) Model {
-	m.jobID = jobID
-	m.allocID = allocID
-	m.taskGroup = taskGroup
-	m.task = task
-	m.contents = ""
+func (m Model) WithHeader(header string) Model {
+	m.header = header
+
 	return m
 }
 
-func (m Model) Append(data string) Model {
-	m.contents += data
+func (m Model) SetContent(content string) Model {
+	m.viewport.SetContent(wordwrap.String(m.contents, m.viewport.Width))
+
+	return m
+}
+
+func (m Model) Append(content string) Model {
+	m.contents += content
 	m.viewport.SetContent(wordwrap.String(m.contents, m.viewport.Width))
 
 	return m
@@ -121,32 +118,25 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) footerView() string {
-	footerText := fmt.Sprintf("<%3.f%%>", m.viewport.ScrollPercent()*100)
+	footerText := fmt.Sprintf("[%3.f%%]", m.viewport.ScrollPercent()*100)
 
+	const offset = 1
+	prefixLine := strings.Repeat("─", offset)
 	info := styles.Subtitle.Render(footerText)
-	line := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info)))
+	suffixLine := strings.Repeat("─", max(0, m.viewport.Width-lipgloss.Width(info))-offset)
 
-	return lipgloss.JoinHorizontal(lipgloss.Center, info, line)
+	return lipgloss.JoinHorizontal(lipgloss.Center, prefixLine, info, suffixLine)
 }
 
 func (m Model) View() string {
-	body := strings.Builder{}
-
-	if m.jobID == "" {
-		body.WriteString("Logs loading...")
-	} else {
-		jobRow := fmt.Sprintf(
-			"Logs - %s %s %s/%s\n",
-			styles.Header.Render(m.jobID),
-			styles.Subtitle.Render(m.allocID),
-			styles.Error.Render(m.taskGroup),
-			styles.Good.Render(m.task),
-		)
-		jobRow += styles.Title.Render(strings.Repeat("─", m.viewport.Width))
-		body.WriteString(jobRow)
+	if !m.ready {
+		return "Waiting for size..."
 	}
 
-	body.WriteString("\n")
+	body := strings.Builder{}
+
+	body.WriteString(m.header)
+	body.WriteString(styles.Title.Render(strings.Repeat("─", m.viewport.Width)))
 	body.WriteString(m.viewport.View())
 	body.WriteString("\n")
 	body.WriteString(m.footerView())

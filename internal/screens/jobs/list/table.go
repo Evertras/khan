@@ -1,4 +1,4 @@
-package jobs
+package list
 
 import (
 	"time"
@@ -6,6 +6,22 @@ import (
 	"github.com/evertras/bubble-table/table"
 	"github.com/evertras/khan/internal/styles"
 )
+
+func genListTable() table.Model {
+	columns := []table.Column{
+		table.NewColumn(tableKeyID, "ID", 15),
+		table.NewColumn(tableKeyName, "Name", 20),
+		table.NewColumn(tableKeyStatus, "Status", 7),
+		table.NewColumn(tableKeySubmitDate, "Submit Timestamp", 20),
+	}
+
+	return table.New(columns).
+		SelectableRows(true).
+		Focused(true).
+		HeaderStyle(styles.Bold).
+		WithPageSize(10).
+		SortByDesc(tableKeySubmitDate)
+}
 
 func (m Model) generateRows() []table.Row {
 	rows := []table.Row{}

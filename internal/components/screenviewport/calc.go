@@ -1,4 +1,4 @@
-package logs
+package screenviewport
 
 func min(a, b int) int {
 	if a < b {
