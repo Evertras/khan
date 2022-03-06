@@ -4,13 +4,13 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/evertras/bubble-table/table"
 	"github.com/hashicorp/nomad/api"
 
 	"github.com/evertras/khan/internal/components/datatree"
 	"github.com/evertras/khan/internal/components/errview"
 	"github.com/evertras/khan/internal/components/logs"
 	"github.com/evertras/khan/internal/screens"
+	"github.com/evertras/khan/internal/screens/jobs/list"
 )
 
 type errMsg error
@@ -18,13 +18,9 @@ type errMsg error
 type Model struct {
 	size screens.Size
 
-	jobs []*api.JobListStub
-
 	inspect *api.Job
 
 	inspectDataTree datatree.Model
-
-	table table.Model
 
 	showServices bool
 	showBatch    bool
@@ -36,34 +32,19 @@ type Model struct {
 	errorMessage errview.Model
 
 	logView logs.Model
+
+	list tea.Model
 }
 
 func NewEmptyModel(size screens.Size) Model {
 	return Model{
 		showServices: true,
 		showBatch:    true,
-		table:        genListTable().SortByDesc(tableKeySubmitDate),
 		errorMessage: errview.NewEmptyModel(),
 		size:         size,
 		lastUpdated:  time.Now(),
+		list:         list.New(size),
 	}
-}
-
-const (
-	tableKeyID         = "id"
-	tableKeyName       = "name"
-	tableKeyStatus     = "status"
-	tableKeySubmitDate = "submitDate"
-)
-
-func NewModelWithJobs(size screens.Size, jobs []*api.JobListStub) Model {
-	m := NewEmptyModel(size)
-
-	m.jobs = jobs
-
-	m.table = genListTable().WithRows(m.generateRows()).SortByDesc(tableKeySubmitDate)
-
-	return m
 }
 
 func (m Model) Init() tea.Cmd {
@@ -72,7 +53,13 @@ func (m Model) Init() tea.Cmd {
 		logCancel = nil
 	}
 
-	return refreshJobsCmd
+	var (
+		cmds []tea.Cmd
+	)
+
+	cmds = append(cmds, m.list.Init())
+
+	return tea.Batch(cmds...)
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -81,11 +68,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds []tea.Cmd
 	)
 	switch msg := msg.(type) {
-	case []*api.JobListStub:
-		m.jobs = msg
-		m.table = m.table.WithRows(m.generateRows())
-		m.lastUpdated = time.Now()
-
 	case *api.Job:
 		m.inspect = msg
 		m.inspectDataTree = datatree.New(m.inspect)
@@ -105,9 +87,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case m.errorMessage.Active():
 		m.errorMessage, cmd = m.errorMessage.Update(msg)
 
-	case len(m.confirmStopIDs) != 0:
-		m, cmd = m.updateConfirmStop(msg)
-
 	case logCancel != nil:
 		m, cmd = m.updateLogView(msg)
 
@@ -115,7 +94,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m, cmd = m.updateInspect(msg)
 
 	default:
-		m, cmd = m.updateMainView(msg)
+		m.list, cmd = m.list.Update(msg)
 	}
 
 	cmds = append(cmds, cmd)
@@ -128,10 +107,6 @@ func (m Model) View() string {
 		return m.errorMessage.View()
 	}
 
-	if len(m.confirmStopIDs) != 0 {
-		return m.viewConfirmStop()
-	}
-
 	if logCancel != nil {
 		return m.viewLogs()
 	}
@@ -140,5 +115,5 @@ func (m Model) View() string {
 		return m.viewInspect()
 	}
 
-	return m.viewMain()
+	return m.list.View()
 }
