@@ -12,7 +12,7 @@ func genListTable() table.Model {
 		table.NewColumn(tableKeyID, "ID", 15),
 		table.NewColumn(tableKeyName, "Name", 20),
 		table.NewColumn(tableKeyStatus, "Status", 15),
-		table.NewColumn(tableKeySubmitDate, "Submit Date", 30),
+		table.NewColumn(tableKeySubmitDate, "Submit Date", 20),
 	}
 
 	return table.New(columns).
