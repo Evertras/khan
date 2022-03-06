@@ -14,6 +14,15 @@ var (
 	logMu     sync.Mutex
 )
 
+func cancelExistingLogStream() {
+	logMu.Lock()
+	if logCancel != nil {
+		logCancel()
+		logCancel = nil
+	}
+	logMu.Unlock()
+}
+
 type logReceivedMsg struct {
 	logStreamingMsg
 
@@ -64,17 +73,6 @@ func (m Model) updateLogView(msg tea.Msg) (Model, tea.Cmd) {
 
 	case logErrMsg:
 		m.errorMessage = errview.NewModelWithMessage(msg.Error())
-
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "esc":
-			logMu.Lock()
-			if logCancel != nil {
-				logCancel()
-				logCancel = nil
-			}
-			logMu.Unlock()
-		}
 	}
 
 	m.logView, cmd = m.logView.Update(msg)

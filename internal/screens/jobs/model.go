@@ -1,8 +1,6 @@
 package jobs
 
 import (
-	"time"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/hashicorp/nomad/api"
 
@@ -13,45 +11,42 @@ import (
 	"github.com/evertras/khan/internal/screens/jobs/list"
 )
 
+type state int
+
+const (
+	stateList state = iota
+	stateLogs
+	stateInspect
+	stateError
+)
+
 type errMsg error
 
 type Model struct {
 	size screens.Size
 
-	inspect *api.Job
-
+	inspect         *api.Job
 	inspectDataTree datatree.Model
-
-	showServices bool
-	showBatch    bool
-
-	lastUpdated time.Time
-
-	confirmStopIDs []string
 
 	errorMessage errview.Model
 
 	logView logs.Model
 
 	list tea.Model
+
+	activeState state
 }
 
 func NewEmptyModel(size screens.Size) Model {
 	return Model{
-		showServices: true,
-		showBatch:    true,
 		errorMessage: errview.NewEmptyModel(),
 		size:         size,
-		lastUpdated:  time.Now(),
 		list:         list.New(size),
 	}
 }
 
 func (m Model) Init() tea.Cmd {
-	if logCancel != nil {
-		logCancel()
-		logCancel = nil
-	}
+	cancelExistingLogStream()
 
 	var (
 		cmds []tea.Cmd
@@ -67,30 +62,45 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd  tea.Cmd
 		cmds []tea.Cmd
 	)
+
 	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		if msg.String() == "esc" {
+			m.activeState = stateList
+
+			cancelExistingLogStream()
+		}
+
 	case *api.Job:
+		m.activeState = stateInspect
 		m.inspect = msg
 		m.inspectDataTree = datatree.New(m.inspect)
 		m.inspectDataTree, _ = m.inspectDataTree.Update(m.size)
 
 	case errMsg:
+		m.activeState = stateError
 		m.errorMessage = errview.NewModelWithMessage(msg.Error())
 
 	case screens.Size:
 		m.size = msg
+
+	case list.ShowLogs:
+		m.activeState = stateLogs
+		m.logView, _ = m.logView.Update(m.size)
+		cmds = append(cmds, showLogsForJobCmd(msg.JobID))
 	}
 
 	m.inspectDataTree, cmd = m.inspectDataTree.Update(msg)
 	cmds = append(cmds, cmd)
 
-	switch {
-	case m.errorMessage.Active():
+	switch m.activeState {
+	case stateError:
 		m.errorMessage, cmd = m.errorMessage.Update(msg)
 
-	case logCancel != nil:
+	case stateLogs:
 		m, cmd = m.updateLogView(msg)
 
-	case m.inspect != nil:
+	case stateInspect:
 		m, cmd = m.updateInspect(msg)
 
 	default:
@@ -103,17 +113,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	if m.errorMessage.Active() {
+	switch m.activeState {
+	case stateError:
 		return m.errorMessage.View()
-	}
 
-	if logCancel != nil {
+	case stateLogs:
 		return m.viewLogs()
-	}
 
-	if m.inspect != nil {
+	case stateInspect:
 		return m.viewInspect()
-	}
 
-	return m.list.View()
+	case stateList:
+		return m.list.View()
+
+	default:
+		return m.list.View()
+	}
 }

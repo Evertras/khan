@@ -59,7 +59,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	)
 
 	if len(m.confirmStopIDs) != 0 {
-		m, cmd = m.updateConfirmStop(msg)
+		return m.updateConfirmStop(msg)
 	}
 
 	switch msg := msg.(type) {
@@ -92,15 +92,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				break
 			}
 
-			//cmds = append(cmds, inspectJobCmd(m.table.HighlightedRow().Data[tableKeyID].(string)))
+			cmds = append(cmds, inspectJobCmd(m.table.HighlightedRow().Data[tableKeyID].(string)))
 
 		case "f":
 			if len(m.jobs) == 0 {
 				break
 			}
 
-			//jobID := m.table.HighlightedRow().Data[tableKeyID].(string)
-			//cmds = append(cmds, showLogsForJobCmd(jobID))
+			jobID := m.table.HighlightedRow().Data[tableKeyID].(string)
+			cmds = append(cmds, func() tea.Msg {
+				return ShowLogs{jobID}
+			})
 
 		case "s":
 			ids := []string{}
