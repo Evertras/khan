@@ -5,6 +5,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/evertras/khan/internal/components/errview"
 	"github.com/evertras/khan/internal/screens"
 	"github.com/evertras/khan/internal/screens/home"
 	"github.com/evertras/khan/internal/screens/jobs"
@@ -23,17 +24,16 @@ type Model struct {
 	connectionInfo string
 
 	size screens.Size
+
+	errView errview.Model
 }
 
 func New() Model {
 	return Model{
 		screen:         home.New(),
 		connectionInfo: api.DefaultConfig().Address,
+		errView:        errview.NewEmptyModel(),
 	}
-}
-
-type errMsg struct {
-	err error
 }
 
 func screenSizeFromWindowSize(msg tea.WindowSizeMsg) screens.Size {
@@ -48,8 +48,15 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-	cmds := make([]tea.Cmd, 0)
+	var (
+		cmd  tea.Cmd
+		cmds []tea.Cmd
+	)
+
+	if m.errView.Active() {
+		m.errView, cmd = m.errView.Update(msg)
+		return m, cmd
+	}
 
 	m.screen, cmd = m.screen.Update(msg)
 	cmds = append(cmds, cmd)
@@ -84,6 +91,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.screen, cmd = m.screen.Update(m.size)
 		cmds = append(cmds, cmd)
+
+	case error:
+		m.errView = errview.NewModelWithMessage(msg.Error())
 	}
 
 	return m, tea.Batch(cmds...)
@@ -97,6 +107,10 @@ func max(a, b int) int {
 }
 
 func (m Model) View() string {
+	if m.errView.Active() {
+		return m.errView.View()
+	}
+
 	body := strings.Builder{}
 
 	row := lipgloss.JoinHorizontal(
