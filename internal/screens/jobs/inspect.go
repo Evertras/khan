@@ -1,4 +1,4 @@
-package joblist
+package jobs
 
 import (
 	tea "github.com/charmbracelet/bubbletea"

@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/evertras/khan/internal/screens"
 	"github.com/evertras/khan/internal/screens/home"
-	"github.com/evertras/khan/internal/screens/joblist"
+	"github.com/evertras/khan/internal/screens/jobs"
 	"github.com/evertras/khan/internal/screens/nodes"
 	"github.com/hashicorp/nomad/api"
 )
@@ -72,7 +72,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, m.screen.Init())
 
 		case "J":
-			m.screen = joblist.NewEmptyModel(m.size)
+			m.screen = jobs.NewEmptyModel(m.size)
 			m.activeTab = activeJobList
 			cmds = append(cmds, m.screen.Init())
 		}

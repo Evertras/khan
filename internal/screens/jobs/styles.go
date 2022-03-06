@@ -1,4 +1,4 @@
-package joblist
+package jobs
 
 import (
 	"github.com/charmbracelet/lipgloss"

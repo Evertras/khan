@@ -1,4 +1,4 @@
-package joblist
+package jobs
 
 import (
 	"time"
@@ -67,6 +67,11 @@ func NewModelWithJobs(size screens.Size, jobs []*api.JobListStub) Model {
 }
 
 func (m Model) Init() tea.Cmd {
+	if logCancel != nil {
+		logCancel()
+		logCancel = nil
+	}
+
 	return refreshJobsCmd
 }
 
