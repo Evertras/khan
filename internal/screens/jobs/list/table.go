@@ -11,7 +11,7 @@ func genListTable() table.Model {
 	columns := []table.Column{
 		table.NewColumn(tableKeyID, "ID", 15),
 		table.NewColumn(tableKeyName, "Name", 20),
-		table.NewColumn(tableKeyStatus, "Status", 10),
+		table.NewColumn(tableKeyStatus, "Status", 7),
 		table.NewColumn(tableKeySubmitDate, "Submit Timestamp", 20),
 	}
 
