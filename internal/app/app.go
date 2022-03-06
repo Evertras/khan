@@ -67,7 +67,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, m.screen.Init())
 
 		case "N":
-			m.screen = nodes.NewEmptyModel(m.size)
+			m.screen = nodes.New(m.size)
 			m.activeTab = activeNodes
 			cmds = append(cmds, m.screen.Init())
 

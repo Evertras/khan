@@ -24,17 +24,10 @@ type Model struct {
 	table table.Model
 }
 
-func NewEmptyModel(size screens.Size) Model {
+func New(size screens.Size) Model {
 	return Model{
 		table: genListTable(),
 		size:  size,
-	}
-}
-
-func NewModelWithNodes(nodes []*api.NodeListStub) Model {
-	return Model{
-		nodes: nodes,
-		table: genListTable().WithRows(rowsFromNodes(nodes)),
 	}
 }
 

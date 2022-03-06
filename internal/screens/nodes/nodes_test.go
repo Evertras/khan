@@ -10,7 +10,7 @@ import (
 )
 
 func TestEmptyViewDoesntPanic(t *testing.T) {
-	m := NewEmptyModel(screens.Size{})
+	m := New(screens.Size{})
 
 	m.View()
 }
@@ -25,7 +25,11 @@ func TestModelWithNodesShowsAllNodeNames(t *testing.T) {
 		},
 	}
 
-	m := NewModelWithNodes(nodes)
+	m := New(screens.Size{})
+
+	updated, _ := m.Update(nodes)
+
+	m = updated.(Model)
 
 	view := m.View()
 
