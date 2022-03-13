@@ -25,7 +25,7 @@ clean-bin:
 # Run a Nomad server for testing purposes
 .PHONY: nomad-test-server
 nomad-test-server: ./bin/nomad ./nomad/dev-server.hcl
-	nomad agent -config ./nomad/dev-server.hcl
+	./bin/nomad agent -config ./nomad/dev-server.hcl
 
 # Build everything
 .PHONY: build
