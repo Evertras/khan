@@ -71,6 +71,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewport = m.viewport.SetContent(m.detailsDataTree.View()).WithHeader(header)
 
 	case screens.Size:
+		m.size = msg
 		m.detailsDataTree, cmd = m.detailsDataTree.Update(m.size)
 		cmds = append(cmds, cmd)
 		m.viewport = m.viewport.SetContent(m.detailsDataTree.View())

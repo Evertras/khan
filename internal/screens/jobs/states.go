@@ -34,7 +34,7 @@ func (m *Model) toStateLogs(jobID string) tea.Cmd {
 
 func (m *Model) toStateInspect(job *api.Job) tea.Cmd {
 	m.activeState = stateInspect
-	m.subviews[stateInspect] = inspect.New(job)
+	m.subviews[stateInspect] = inspect.New(job, m.size)
 
 	return tea.Batch(
 		m.subviews[stateInspect].Init(),

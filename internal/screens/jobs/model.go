@@ -24,7 +24,7 @@ func New(size screens.Size) Model {
 		subviews: map[state]tea.Model{
 			stateList:    list.New(size),
 			stateLogs:    logs.New(""),
-			stateInspect: inspect.New(nil),
+			stateInspect: inspect.New(nil, size),
 		},
 	}
 }
