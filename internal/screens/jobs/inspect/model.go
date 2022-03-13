@@ -5,6 +5,7 @@ import (
 	"github.com/evertras/bubble-data-tree/datatree"
 	"github.com/evertras/khan/internal/components/screenviewport"
 	"github.com/evertras/khan/internal/screens"
+	"github.com/evertras/khan/internal/styles"
 	"github.com/hashicorp/nomad/api"
 )
 
@@ -17,10 +18,16 @@ type Model struct {
 }
 
 func New(data *api.Job, size screens.Size) Model {
+	header := "Loading..."
+
+	if data != nil && data.Name != nil {
+		header = "Job inspect: " + *data.Name
+	}
+
 	return Model{
 		data:     data,
 		tree:     datatree.New(data),
-		viewport: screenviewport.New(),
+		viewport: screenviewport.New().WithHeader(styles.Subtitle.Render(header)),
 		size:     size,
 	}
 }
