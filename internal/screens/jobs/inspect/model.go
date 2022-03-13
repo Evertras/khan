@@ -2,7 +2,7 @@ package inspect
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/evertras/khan/internal/components/datatree"
+	"github.com/evertras/bubble-data-tree/datatree"
 	"github.com/hashicorp/nomad/api"
 )
 

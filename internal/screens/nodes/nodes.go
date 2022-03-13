@@ -4,35 +4,30 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/evertras/bubble-table/table"
-	"github.com/hashicorp/nomad/api"
 
-	"github.com/evertras/khan/internal/components/datatree"
 	"github.com/evertras/khan/internal/screens"
+	"github.com/evertras/khan/internal/screens/nodes/details"
+	"github.com/evertras/khan/internal/screens/nodes/list"
 )
 
 type errMsg error
 
 type Model struct {
-	nodes []*api.NodeListStub
-	size  screens.Size
+	size screens.Size
 
-	details *api.Node
-
-	detailsDataTree datatree.Model
-
-	table table.Model
+	activeView tea.Model
 }
 
 func New(size screens.Size) Model {
 	return Model{
-		table: genListTable(),
-		size:  size,
+		size: size,
+
+		activeView: list.New(size),
 	}
 }
 
 func (m Model) Init() tea.Cmd {
-	return refreshNodeListCmd
+	return m.activeView.Init()
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -41,30 +36,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds []tea.Cmd
 	)
 
-	// Always update received data regardless of view
 	switch msg := msg.(type) {
-	case []*api.NodeListStub:
-		m.nodes = msg
-		m.table = m.table.WithRows(rowsFromNodes(msg))
+	case list.DetailsSelectedID:
+		m.activeView = details.New(string(msg), m.size)
 
-	case *api.Node:
-		m.details = msg
-		m.detailsDataTree = datatree.New(msg)
-		m.detailsDataTree, _ = m.detailsDataTree.Update(m.size)
+		cmd = m.activeView.Init()
+		cmds = append(cmds, cmd)
+
+	case details.Exit:
+		m.activeView = list.New(m.size)
+
+		cmd = m.activeView.Init()
+		cmds = append(cmds, cmd)
 
 	case screens.Size:
 		m.size = msg
 	}
 
-	if m.details != nil {
-		m, cmd = m.updateDetails(msg)
-		cmds = append(cmds, cmd)
-	} else {
-		m, cmd = m.updateList(msg)
-		cmds = append(cmds, cmd)
-	}
+	m.activeView, cmd = m.activeView.Update(msg)
 
-	m.detailsDataTree, cmd = m.detailsDataTree.Update(msg)
 	cmds = append(cmds, cmd)
 
 	return m, tea.Batch(cmds...)
@@ -73,11 +63,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
 	body := strings.Builder{}
 
-	if m.details != nil {
-		body.WriteString(m.viewDetails())
-	} else {
-		body.WriteString(m.viewList())
-	}
+	body.WriteString(m.activeView.View())
 
 	return body.String()
 }

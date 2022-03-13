@@ -16,8 +16,10 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/docker/go-units v0.3.3 h1:Xk8S3Xj5sLGlG5g67hJmYMmUgXv5N4PhkjJHHqrwnTk=
 github.com/docker/go-units v0.3.3/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
-github.com/evertras/bubble-table v0.7.0 h1:KUBs6ii5eSuj/I6lmEySJsEGMwYhZeex46xkqPA9zCE=
-github.com/evertras/bubble-table v0.7.0/go.mod h1:OZq5XdGas3p4OZi/if0NLoAeIlgpCDvCgcGG6lD4oGY=
+github.com/evertras/bubble-data-tree v0.1.1 h1:8Us8WjwNFtJFFYT/C/VK6ACM+MdmLDrOSDDH5m7VNBg=
+github.com/evertras/bubble-data-tree v0.1.1/go.mod h1:6Z8zma2iZ1guyQFyy6NE3T8uvzlQQf7otINz6ES2yK8=
+github.com/evertras/bubble-table v0.8.4 h1:8VP8IPHASriMQuQYu69PWayHfPNAB3KM8nSwaS6spJ4=
+github.com/evertras/bubble-table v0.8.4/go.mod h1:OZq5XdGas3p4OZi/if0NLoAeIlgpCDvCgcGG6lD4oGY=
 github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/hashicorp/cronexpr v1.1.1 h1:NJZDd87hGXjoZBdvyCF9mX4DCq5Wy7+A/w+A7q0wn6c=

@@ -1,4 +1,4 @@
-package nodes
+package list
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
@@ -13,22 +13,14 @@ func refreshNodeListCmd() tea.Msg {
 	nodes, _, err := client.Nodes().List(&api.QueryOptions{})
 
 	if err != nil {
-		return errMsg(err)
+		return err
 	}
 
 	return nodes
 }
 
-func getDetailsCmd(id string) func() tea.Msg {
+func detailsSelectedCmd(nodeID string) tea.Cmd {
 	return func() tea.Msg {
-		client := repository.GetNomadClient()
-
-		node, _, err := client.Nodes().Info(id, &api.QueryOptions{})
-
-		if err != nil {
-			return errMsg(err)
-		}
-
-		return node
+		return DetailsSelectedID(nodeID)
 	}
 }
