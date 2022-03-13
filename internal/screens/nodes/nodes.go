@@ -4,10 +4,10 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/evertras/bubble-data-tree/datatree"
 	"github.com/evertras/bubble-table/table"
 	"github.com/hashicorp/nomad/api"
 
-	"github.com/evertras/khan/internal/components/datatree"
 	"github.com/evertras/khan/internal/screens"
 )
 
