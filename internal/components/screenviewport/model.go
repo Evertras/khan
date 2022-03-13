@@ -23,9 +23,9 @@ type Model struct {
 	useHighPerformanceRenderer bool
 }
 
-func New(jobID string) Model {
+func New() Model {
 	m := Model{
-		useHighPerformanceRenderer: true,
+		useHighPerformanceRenderer: false,
 	}
 
 	return m
@@ -38,6 +38,7 @@ func (m Model) WithHeader(header string) Model {
 }
 
 func (m Model) SetContent(content string) Model {
+	m.contents = content
 	m.viewport.SetContent(wordwrap.String(m.contents, m.viewport.Width))
 
 	return m
@@ -72,9 +73,10 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		}
 
 	case screens.Size:
-		headerHeight := 2
+		headerHeight := 1
 		footerHeight := 1
 		verticalMarginHeight := headerHeight + footerHeight
+		fullHeight := msg.Height - verticalMarginHeight
 
 		if !m.ready {
 			// Since this program is using the full size of the viewport we
@@ -82,23 +84,18 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			// we can initialize the viewport. The initial dimensions come in
 			// quickly, though asynchronously, which is why we wait for them
 			// here.
-			m.viewport = viewport.New(msg.Width, msg.Height-verticalMarginHeight)
+			m.viewport = viewport.New(msg.Width, fullHeight)
 			m.viewport.KeyMap.PageDown.SetKeys("f", " ", "ctrl+f", "pgdown")
 			m.viewport.KeyMap.PageUp.SetKeys("b", "ctrl+b", "pgup")
 			m.viewport.YPosition = headerHeight
 			m.viewport.HighPerformanceRendering = false
-			m.viewport.SetContent(wordwrap.String(m.contents, msg.Width))
+			m = m.SetContent(m.contents)
 			m.ready = true
-
-			// This is only necessary for high performance rendering, which in
-			// most cases you won't need.
-			//
-			// Render the viewport one line below the header.
 			m.viewport.YPosition = headerHeight + 1
 		} else {
 			m.viewport.Width = msg.Width
-			m.viewport.Height = msg.Height - verticalMarginHeight
-			m.viewport.SetContent(wordwrap.String(m.contents, msg.Width))
+			m.viewport.Height = fullHeight
+			m = m.SetContent(m.contents)
 		}
 
 		if m.useHighPerformanceRenderer {
@@ -130,7 +127,7 @@ func (m Model) footerView() string {
 
 func (m Model) View() string {
 	if !m.ready {
-		return "Waiting for size..."
+		return "Waiting for size message..."
 	}
 
 	body := strings.Builder{}

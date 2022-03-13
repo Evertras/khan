@@ -6,8 +6,8 @@ require (
 	github.com/charmbracelet/bubbles v0.10.3
 	github.com/charmbracelet/bubbletea v0.19.3
 	github.com/charmbracelet/lipgloss v0.4.0
-	github.com/evertras/bubble-table v0.7.0
 	github.com/evertras/bubble-data-tree v0.1.1
+	github.com/evertras/bubble-table v0.8.4
 	github.com/hashicorp/nomad/api v0.0.0-20220211135303-4afc67b7002e
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.11.0
